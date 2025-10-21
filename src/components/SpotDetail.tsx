@@ -12,6 +12,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import ReviewSection from "@/components/ReviewSection";
 
 interface SpotDetailProps {
   spot: FishingSpot;
@@ -229,6 +230,9 @@ const SpotDetail = ({ spot, onClose, isFavorite, onToggleFavorite, onEdit, onDel
               )}
             </div>
           </div>
+
+          {/* Reviews Section */}
+          <ReviewSection spotId={spot.id} />
         </div>
       </div>
 
