@@ -1,4 +1,4 @@
-import { MapPin, Fish, MessageSquare, ChevronRight, LogOut, Shield, Edit2, Camera, Settings } from "lucide-react";
+import { MapPin, Fish, MessageSquare, ChevronRight, LogOut, Shield, Edit2, Camera, Settings, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import avatarJean from "@/assets/avatar-jean.jpg";
@@ -22,6 +22,7 @@ const stats = [
 
 const menuItems = [
   { label: "Mes spots", icon: MapPin, action: "mySpots" as const },
+  { label: "Mon matériel", icon: Package, action: "equipment" as const },
   { label: "Mes prises", icon: Fish, action: "myCatches" as const },
   { label: "Paramètres", icon: Settings, action: "settings" as const },
 ];
@@ -264,6 +265,9 @@ const Profile = () => {
     switch (action) {
       case "mySpots":
         navigate(`/user/${user.id}`);
+        break;
+      case "equipment":
+        navigate("/equipment");
         break;
       case "myCatches":
         toast({
