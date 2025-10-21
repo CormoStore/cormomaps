@@ -127,8 +127,8 @@ const MapPage = () => {
         ))}
       </Map>
 
-      {/* Floating Add Button - Hide in edit mode */}
-      {!editingSpot && (
+      {/* Floating Add Button - Hide in edit mode and creation form */}
+      {!editingSpot && !showCreateForm && (
         <button
           onClick={handleCreateSpot}
           className={`absolute bottom-32 right-4 z-[60] w-14 h-14 rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-all animate-scale-in ${
