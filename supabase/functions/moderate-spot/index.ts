@@ -100,7 +100,18 @@ Réponds UNIQUEMENT avec un JSON au format:
         );
       }
       
-      throw new Error(`AI gateway error: ${response.status}`);
+      // Return generic error without exposing internal details
+      return new Response(
+        JSON.stringify({ 
+          decision: "review", 
+          reason: "Service temporairement indisponible",
+          confidence: 0.0
+        }),
+        { 
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200
+        }
+      );
     }
 
     const data = await response.json();
@@ -142,15 +153,15 @@ Réponds UNIQUEMENT avec un JSON au format:
     );
 
   } catch (error) {
+    // Log detailed error server-side for debugging
     console.error("Error in moderate-spot function:", error);
     
-    // On error, default to manual review
+    // Return generic message to client without exposing internal details
     return new Response(
       JSON.stringify({ 
         decision: "review", 
-        reason: "Erreur lors de la modération automatique",
-        confidence: 0.0,
-        error: error instanceof Error ? error.message : String(error)
+        reason: "Service temporairement indisponible",
+        confidence: 0.0
       }),
       { 
         headers: { ...corsHeaders, "Content-Type": "application/json" },
