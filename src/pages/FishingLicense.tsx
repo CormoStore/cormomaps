@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { CreditCard, Plus, Calendar, Building2, Trash2 } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { CreditCard, Plus, Calendar, Building2, Trash2, QrCode } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -35,11 +35,12 @@ const FishingLicense = () => {
   const [licenses, setLicenses] = useState<FishingLicense[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isScanning, setIsScanning] = useState(false);
+  const [scannedQRCode, setScannedQRCode] = useState<string | null>(null);
+  const scannerRef = useRef<any>(null);
   const [formData, setFormData] = useState({
     license_number: "",
     license_type: "",
-    issue_date: "",
-    expiry_date: "",
     issuing_organization: "",
   });
 
@@ -67,6 +68,48 @@ const FishingLicense = () => {
     }
   };
 
+  const startScanning = async () => {
+    setIsScanning(true);
+    const { Html5Qrcode } = await import("html5-qrcode");
+    
+    try {
+      const html5QrCode = new Html5Qrcode("qr-reader");
+      scannerRef.current = html5QrCode;
+
+      await html5QrCode.start(
+        { facingMode: "environment" },
+        {
+          fps: 10,
+          qrbox: { width: 250, height: 250 },
+        },
+        (decodedText) => {
+          setScannedQRCode(decodedText);
+          stopScanning();
+          toast.success("QR Code scanné avec succès");
+        },
+        (error) => {
+          // Ignore errors during scanning
+        }
+      );
+    } catch (err) {
+      console.error("Error starting scanner:", err);
+      toast.error("Impossible d'accéder à la caméra");
+      setIsScanning(false);
+    }
+  };
+
+  const stopScanning = async () => {
+    if (scannerRef.current) {
+      try {
+        await scannerRef.current.stop();
+        scannerRef.current = null;
+      } catch (err) {
+        console.error("Error stopping scanner:", err);
+      }
+    }
+    setIsScanning(false);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -75,30 +118,35 @@ const FishingLicense = () => {
       return;
     }
 
-    if (!formData.license_number || !formData.license_type || !formData.issue_date || !formData.expiry_date) {
+    if (!formData.license_number || !formData.license_type) {
       toast.error("Veuillez remplir tous les champs obligatoires");
       return;
     }
+
+    // Calculate dates: January 1st to December 31st of current year
+    const currentYear = new Date().getFullYear();
+    const issue_date = `${currentYear}-01-01`;
+    const expiry_date = `${currentYear}-12-31`;
 
     try {
       const { error } = await supabase.from("fishing_licenses").insert({
         user_id: user.id,
         license_number: formData.license_number,
         license_type: formData.license_type,
-        issue_date: formData.issue_date,
-        expiry_date: formData.expiry_date,
+        issue_date,
+        expiry_date,
         issuing_organization: formData.issuing_organization || null,
+        image_url: scannedQRCode,
       });
 
       if (error) throw error;
 
       toast.success("Carte de pêche ajoutée avec succès");
       setIsDialogOpen(false);
+      setScannedQRCode(null);
       setFormData({
         license_number: "",
         license_type: "",
-        issue_date: "",
-        expiry_date: "",
         issuing_organization: "",
       });
       fetchLicenses();
@@ -142,70 +190,86 @@ const FishingLicense = () => {
               <DialogTitle>Ajouter une carte de pêche</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <Label htmlFor="license_number">Numéro de carte *</Label>
-                <Input
-                  id="license_number"
-                  value={formData.license_number}
-                  onChange={(e) => setFormData({ ...formData, license_number: e.target.value })}
-                  required
-                />
-              </div>
+              {!isScanning ? (
+                <>
+                  <div className="space-y-2">
+                    <Button
+                      type="button"
+                      onClick={startScanning}
+                      className="w-full gap-2"
+                      variant="outline"
+                    >
+                      <QrCode className="w-4 h-4" />
+                      Scanner le QR code
+                    </Button>
+                    {scannedQRCode && (
+                      <div className="p-3 bg-muted rounded-lg">
+                        <p className="text-sm text-muted-foreground mb-2">QR Code scanné :</p>
+                        <img src={scannedQRCode} alt="QR Code" className="w-32 h-32 mx-auto" />
+                      </div>
+                    )}
+                  </div>
 
-              <div>
-                <Label htmlFor="license_type">Type de carte *</Label>
-                <Select
-                  value={formData.license_type}
-                  onValueChange={(value) => setFormData({ ...formData, license_type: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Sélectionner un type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {LICENSE_TYPES.map((type) => (
-                      <SelectItem key={type.value} value={type.value}>
-                        {type.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+                  <div>
+                    <Label htmlFor="license_number">Numéro de carte *</Label>
+                    <Input
+                      id="license_number"
+                      value={formData.license_number}
+                      onChange={(e) => setFormData({ ...formData, license_number: e.target.value })}
+                      required
+                    />
+                  </div>
 
-              <div>
-                <Label htmlFor="issue_date">Date d'émission *</Label>
-                <Input
-                  id="issue_date"
-                  type="date"
-                  value={formData.issue_date}
-                  onChange={(e) => setFormData({ ...formData, issue_date: e.target.value })}
-                  required
-                />
-              </div>
+                  <div>
+                    <Label htmlFor="license_type">Type de carte *</Label>
+                    <Select
+                      value={formData.license_type}
+                      onValueChange={(value) => setFormData({ ...formData, license_type: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Sélectionner un type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {LICENSE_TYPES.map((type) => (
+                          <SelectItem key={type.value} value={type.value}>
+                            {type.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-              <div>
-                <Label htmlFor="expiry_date">Date d'expiration *</Label>
-                <Input
-                  id="expiry_date"
-                  type="date"
-                  value={formData.expiry_date}
-                  onChange={(e) => setFormData({ ...formData, expiry_date: e.target.value })}
-                  required
-                />
-              </div>
+                  <div>
+                    <Label htmlFor="issuing_organization">Organisation émettrice</Label>
+                    <Input
+                      id="issuing_organization"
+                      placeholder="Ex: AAPPMA locale"
+                      value={formData.issuing_organization}
+                      onChange={(e) => setFormData({ ...formData, issuing_organization: e.target.value })}
+                    />
+                  </div>
 
-              <div>
-                <Label htmlFor="issuing_organization">Organisation émettrice</Label>
-                <Input
-                  id="issuing_organization"
-                  placeholder="Ex: AAPPMA locale"
-                  value={formData.issuing_organization}
-                  onChange={(e) => setFormData({ ...formData, issuing_organization: e.target.value })}
-                />
-              </div>
+                  <div className="text-sm text-muted-foreground bg-muted/50 p-3 rounded-lg">
+                    La carte sera valable du 1er janvier au 31 décembre {new Date().getFullYear()}
+                  </div>
 
-              <Button type="submit" className="w-full">
-                Ajouter la carte
-              </Button>
+                  <Button type="submit" className="w-full">
+                    Ajouter la carte
+                  </Button>
+                </>
+              ) : (
+                <div className="space-y-4">
+                  <div id="qr-reader" className="w-full"></div>
+                  <Button
+                    type="button"
+                    onClick={stopScanning}
+                    variant="outline"
+                    className="w-full"
+                  >
+                    Annuler le scan
+                  </Button>
+                </div>
+              )}
             </form>
           </DialogContent>
         </Dialog>
@@ -251,6 +315,12 @@ const FishingLicense = () => {
                       <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>
+
+                  {license.image_url && (
+                    <div className="mb-3 p-3 bg-muted/50 rounded-lg flex justify-center">
+                      <img src={license.image_url} alt="QR Code" className="w-32 h-32" />
+                    </div>
+                  )}
 
                   <div className="space-y-2 text-sm">
                     <div className="flex items-center gap-2 text-muted-foreground">
