@@ -1,12 +1,17 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Search, Filter, MapPin } from "lucide-react";
+import Map, { Marker, NavigationControl, GeolocateControl } from "react-map-gl";
 import { fishingSpots } from "@/data/spots";
 import SpotDetail from "@/components/SpotDetail";
 import { FishingSpot } from "@/types";
+import "mapbox-gl/dist/mapbox-gl.css";
 
-const Map = () => {
+const MAPBOX_TOKEN = "pk.eyJ1IjoiY29ybW9zdG9yZSIsImEiOiJjbWgwZ2U4NWUwaG9tNWtxdWM0cTEyamtyIn0.eCz_pytNEYgJyKjnP9J_Lw";
+
+const MapPage = () => {
   const [selectedSpot, setSelectedSpot] = useState<FishingSpot | null>(null);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
+  const mapRef = useRef(null);
 
   const toggleFavorite = (spotId: string) => {
     setFavorites((prev) => {
@@ -37,46 +42,43 @@ const Map = () => {
         </div>
       </div>
 
-      {/* Map Placeholder */}
-      <div className="w-full h-full bg-gradient-to-br from-blue-50 to-green-50 flex items-center justify-center relative overflow-hidden">
-        {/* Grid pattern overlay */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="grid grid-cols-8 grid-rows-8 h-full w-full">
-            {Array.from({ length: 64 }).map((_, i) => (
-              <div key={i} className="border border-gray-400" />
-            ))}
-          </div>
-        </div>
+      {/* Interactive Mapbox Map */}
+      <Map
+        ref={mapRef}
+        mapboxAccessToken={MAPBOX_TOKEN}
+        initialViewState={{
+          longitude: 2.3522,
+          latitude: 46.6034,
+          zoom: 5.5,
+        }}
+        style={{ width: "100%", height: "100%" }}
+        mapStyle="mapbox://styles/mapbox/outdoors-v12"
+      >
+        {/* Map Controls */}
+        <NavigationControl position="top-right" style={{ top: 80, right: 16 }} />
+        <GeolocateControl
+          position="top-right"
+          style={{ top: 140, right: 16 }}
+          trackUserLocation
+        />
 
-        {/* Spots on map */}
-        <div className="absolute inset-0">
-          {fishingSpots.map((spot, index) => (
+        {/* Fishing Spot Markers */}
+        {fishingSpots.map((spot) => (
+          <Marker
+            key={spot.id}
+            longitude={spot.longitude}
+            latitude={spot.latitude}
+            anchor="bottom"
+          >
             <button
-              key={spot.id}
               onClick={() => setSelectedSpot(spot)}
-              className="absolute w-10 h-10 rounded-full bg-[hsl(var(--ios-blue))] shadow-lg flex items-center justify-center transform hover:scale-110 transition-transform animate-scale-in"
-              style={{
-                left: `${20 + index * 25}%`,
-                top: `${30 + index * 10}%`,
-              }}
+              className="w-10 h-10 rounded-full bg-[hsl(var(--ios-blue))] shadow-lg flex items-center justify-center transform hover:scale-110 transition-transform animate-scale-in"
             >
               <MapPin className="w-5 h-5 text-white fill-white" />
             </button>
-          ))}
-        </div>
-
-        {/* Info text */}
-        <div className="relative z-10 text-center p-6 bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg max-w-md mx-4">
-          <MapPin className="w-12 h-12 text-[hsl(var(--ios-blue))] mx-auto mb-3" />
-          <h2 className="text-xl font-bold mb-2">Carte interactive</h2>
-          <p className="text-sm text-muted-foreground mb-4">
-            Cliquez sur les marqueurs bleus pour découvrir les spots de pêche
-          </p>
-          <p className="text-xs text-muted-foreground">
-            Note: Pour utiliser Mapbox, ajoutez votre token dans Map.tsx
-          </p>
-        </div>
-      </div>
+          </Marker>
+        ))}
+      </Map>
 
       {/* Spot Detail Modal */}
       {selectedSpot && (
@@ -91,4 +93,4 @@ const Map = () => {
   );
 };
 
-export default Map;
+export default MapPage;
