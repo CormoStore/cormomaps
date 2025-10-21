@@ -47,6 +47,17 @@ const CreateSpotForm = ({ onClose, onSubmit, initialCoordinates, editingSpot }: 
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // Update coordinates when initialCoordinates change
+  useEffect(() => {
+    if (initialCoordinates && !editingSpot) {
+      setFormData(prev => ({
+        ...prev,
+        latitude: initialCoordinates.lat.toFixed(6),
+        longitude: initialCoordinates.lng.toFixed(6),
+      }));
+    }
+  }, [initialCoordinates, editingSpot]);
+
   // Geocoding search with debounce
   useEffect(() => {
     if (!addressSearch || addressSearch.length < 3) {
