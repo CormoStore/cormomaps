@@ -22,9 +22,10 @@ interface CreateSpotFormProps {
   onSubmit: (spot: FishingSpot) => void;
   initialCoordinates?: { lat: number; lng: number };
   editingSpot?: FishingSpot;
+  onActivateMapMode?: () => void;
 }
 
-const CreateSpotForm = ({ onClose, onSubmit, initialCoordinates, editingSpot }: CreateSpotFormProps) => {
+const CreateSpotForm = ({ onClose, onSubmit, initialCoordinates, editingSpot, onActivateMapMode }: CreateSpotFormProps) => {
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [additionalImages, setAdditionalImages] = useState<string[]>(editingSpot?.images || []);
@@ -49,14 +50,14 @@ const CreateSpotForm = ({ onClose, onSubmit, initialCoordinates, editingSpot }: 
 
   // Update coordinates when initialCoordinates change
   useEffect(() => {
-    if (initialCoordinates && !editingSpot) {
+    if (initialCoordinates) {
       setFormData(prev => ({
         ...prev,
         latitude: initialCoordinates.lat.toFixed(6),
         longitude: initialCoordinates.lng.toFixed(6),
       }));
     }
-  }, [initialCoordinates, editingSpot]);
+  }, [initialCoordinates]);
 
   // Geocoding search with debounce
   useEffect(() => {
@@ -300,33 +301,46 @@ const CreateSpotForm = ({ onClose, onSubmit, initialCoordinates, editingSpot }: 
           </div>
 
           {/* Coordinates */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-2">
-              <Label htmlFor="latitude" className="flex items-center gap-2">
-                <MapPin className="w-4 h-4" />
-                Latitude *
-              </Label>
-              <Input
-                id="latitude"
-                type="number"
-                step="0.000001"
-                value={formData.latitude}
-                onChange={(e) => setFormData({ ...formData, latitude: e.target.value })}
-                placeholder="46.123456"
-              />
-              {errors.latitude && <p className="text-sm text-destructive">{errors.latitude}</p>}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="longitude">Longitude *</Label>
-              <Input
-                id="longitude"
-                type="number"
-                step="0.000001"
-                value={formData.longitude}
-                onChange={(e) => setFormData({ ...formData, longitude: e.target.value })}
-                placeholder="2.123456"
-              />
-              {errors.longitude && <p className="text-sm text-destructive">{errors.longitude}</p>}
+          <div className="space-y-3">
+            {onActivateMapMode && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onActivateMapMode}
+                className="w-full"
+              >
+                <MapPin className="w-4 h-4 mr-2" />
+                Cliquer sur la carte pour changer la position
+              </Button>
+            )}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label htmlFor="latitude" className="flex items-center gap-2">
+                  <MapPin className="w-4 h-4" />
+                  Latitude *
+                </Label>
+                <Input
+                  id="latitude"
+                  type="number"
+                  step="0.000001"
+                  value={formData.latitude}
+                  onChange={(e) => setFormData({ ...formData, latitude: e.target.value })}
+                  placeholder="46.123456"
+                />
+                {errors.latitude && <p className="text-sm text-destructive">{errors.latitude}</p>}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="longitude">Longitude *</Label>
+                <Input
+                  id="longitude"
+                  type="number"
+                  step="0.000001"
+                  value={formData.longitude}
+                  onChange={(e) => setFormData({ ...formData, longitude: e.target.value })}
+                  placeholder="2.123456"
+                />
+                {errors.longitude && <p className="text-sm text-destructive">{errors.longitude}</p>}
+              </div>
             </div>
           </div>
 

@@ -47,7 +47,9 @@ const MapPage = () => {
     const { lngLat } = event;
     setMapCenter({ lat: lngLat.lat, lng: lngLat.lng });
     setIsCreationMode(false);
-    setShowCreateForm(true);
+    if (!showCreateForm) {
+      setShowCreateForm(true);
+    }
   };
 
   const handleSubmitSpot = (spot: FishingSpot) => {
@@ -62,6 +64,7 @@ const MapPage = () => {
   const handleEditSpot = (spot: FishingSpot) => {
     setEditingSpot(spot);
     setSelectedSpot(null);
+    setMapCenter({ lat: spot.latitude, lng: spot.longitude });
     setShowCreateForm(true);
   };
 
@@ -122,29 +125,31 @@ const MapPage = () => {
         ))}
       </Map>
 
-      {/* Floating Add Button */}
-      <button
-        onClick={handleCreateSpot}
-        className={`absolute bottom-28 right-4 z-10 w-14 h-14 rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-all animate-scale-in ${
-          isCreationMode 
-            ? "bg-red-500 animate-pulse" 
-            : "bg-[hsl(var(--ios-blue))]"
-        }`}
-      >
-        {isCreationMode ? (
-          <X className="w-6 h-6 text-white" onClick={(e) => {
-            e.stopPropagation();
-            setIsCreationMode(false);
-          }} />
-        ) : (
-          <Plus className="w-6 h-6 text-white" />
-        )}
-      </button>
+      {/* Floating Add Button - Hide in edit mode */}
+      {!editingSpot && (
+        <button
+          onClick={handleCreateSpot}
+          className={`absolute bottom-28 right-4 z-10 w-14 h-14 rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-all animate-scale-in ${
+            isCreationMode 
+              ? "bg-red-500 animate-pulse" 
+              : "bg-[hsl(var(--ios-blue))]"
+          }`}
+        >
+          {isCreationMode ? (
+            <X className="w-6 h-6 text-white" onClick={(e) => {
+              e.stopPropagation();
+              setIsCreationMode(false);
+            }} />
+          ) : (
+            <Plus className="w-6 h-6 text-white" />
+          )}
+        </button>
+      )}
 
       {/* Creation Mode Indicator */}
       {isCreationMode && (
         <div className="absolute top-24 left-1/2 -translate-x-1/2 z-10 bg-background/95 backdrop-blur-md px-4 py-2 rounded-full shadow-lg animate-fade-in">
-          <p className="text-sm font-medium">📍 Cliquez sur la carte pour placer le spot</p>
+          <p className="text-sm font-medium">📍 Cliquez sur la carte pour {editingSpot ? "déplacer" : "placer"} le spot</p>
         </div>
       )}
 
@@ -169,6 +174,13 @@ const MapPage = () => {
           onSubmit={handleSubmitSpot}
           initialCoordinates={mapCenter || undefined}
           editingSpot={editingSpot || undefined}
+          onActivateMapMode={editingSpot ? () => {
+            setIsCreationMode(true);
+            toast({
+              title: "Mode modification activé",
+              description: "Cliquez sur la carte pour déplacer le spot",
+            });
+          } : undefined}
         />
       )}
     </div>
