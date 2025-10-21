@@ -99,6 +99,45 @@ const Profile = () => {
     setUploadingAvatar(true);
 
     try {
+      // Convert image to base64 for moderation
+      const reader = new FileReader();
+      const imageDataPromise = new Promise<string>((resolve) => {
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.readAsDataURL(file);
+      });
+      const imageData = await imageDataPromise;
+
+      // Moderate the image with AI
+      toast({
+        title: "Vérification",
+        description: "Modération de l'image en cours...",
+      });
+
+      const { data: moderationData, error: moderationError } = await supabase.functions.invoke(
+        "moderate-avatar",
+        { body: { imageData } }
+      );
+
+      if (moderationError) {
+        console.error("Moderation error:", moderationError);
+        toast({
+          title: "Erreur",
+          description: "Impossible de vérifier l'image",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Check moderation result
+      if (!moderationData.approved) {
+        toast({
+          title: "Image refusée",
+          description: moderationData.reason || "Cette image n'est pas appropriée comme photo de profil",
+          variant: "destructive",
+        });
+        return;
+      }
+
       // Delete old avatar if exists
       if (profile?.avatar_url) {
         const oldPath = profile.avatar_url.split("/").pop();

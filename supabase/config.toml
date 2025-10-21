@@ -2,3 +2,6 @@ project_id = "spuodxsfhjlispjobmkl"
 
 [functions.moderate-spot]
 verify_jwt = true
+
+[functions.moderate-avatar]
+verify_jwt = true
