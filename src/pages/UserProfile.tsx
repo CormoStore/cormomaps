@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, MapPin, Fish, MessageSquare, Star } from "lucide-react";
+import { ArrowLeft, MapPin, Fish, MessageSquare, Star, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
+import { useAuth } from "@/contexts/AuthContext";
+import { Badge } from "@/components/ui/badge";
 
 interface Profile {
   id: string;
@@ -21,6 +23,7 @@ interface Spot {
   image: string | null;
   rating: number;
   fish: string[];
+  status: string;
 }
 
 interface Review {
@@ -36,10 +39,12 @@ interface Review {
 const UserProfile = () => {
   const { userId } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [spots, setSpots] = useState<Spot[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const isOwnProfile = user?.id === userId;
 
   useEffect(() => {
     if (userId) {
@@ -61,12 +66,18 @@ const UserProfile = () => {
       setProfile(profileData);
     }
 
-    // Load spots
-    const { data: spotsData } = await supabase
+    // Load spots - show all spots if viewing own profile, only approved for others
+    let spotsQuery = supabase
       .from("fishing_spots")
-      .select("id, name, description, image, rating, fish")
-      .eq("created_by", userId)
-      .eq("status", "approved");
+      .select("id, name, description, image, rating, fish, status")
+      .eq("created_by", userId);
+    
+    // Only filter by approved status if viewing another user's profile
+    if (!isOwnProfile) {
+      spotsQuery = spotsQuery.eq("status", "approved");
+    }
+
+    const { data: spotsData } = await spotsQuery;
 
     if (spotsData) {
       setSpots(spotsData);
@@ -194,7 +205,15 @@ const UserProfile = () => {
                       />
                     )}
                     <div className="flex-1">
-                      <h3 className="font-semibold text-lg">{spot.name}</h3>
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="font-semibold text-lg">{spot.name}</h3>
+                        {spot.status === "pending" && (
+                          <Badge variant="outline" className="flex items-center gap-1">
+                            <Clock className="w-3 h-3" />
+                            En attente
+                          </Badge>
+                        )}
+                      </div>
                       <p className="text-sm text-muted-foreground line-clamp-2">
                         {spot.description}
                       </p>
