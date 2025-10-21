@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, MapPin, Fish, MessageSquare, Star, Clock } from "lucide-react";
+import { ArrowLeft, MapPin, Fish, MessageSquare, Star, Clock, Weight, Ruler } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -37,6 +37,17 @@ interface Review {
   };
 }
 
+interface Post {
+  id: string;
+  image: string;
+  caption: string | null;
+  fish_species: string | null;
+  weight: string | null;
+  length: string | null;
+  location: string | null;
+  created_at: string;
+}
+
 const UserProfile = () => {
   const { userId } = useParams();
   const navigate = useNavigate();
@@ -44,6 +55,7 @@ const UserProfile = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [spots, setSpots] = useState<Spot[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
+  const [posts, setPosts] = useState<Post[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const isOwnProfile = user?.id === userId;
 
@@ -102,6 +114,17 @@ const UserProfile = () => {
         ...review,
         spot: { name: (review as any).fishing_spots.name }
       })));
+    }
+
+    // Load posts
+    const { data: postsData } = await supabase
+      .from("fishing_posts")
+      .select("id, image, caption, fish_species, weight, length, location, created_at")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false });
+
+    if (postsData) {
+      setPosts(postsData);
     }
 
     setIsLoading(false);
@@ -181,10 +204,11 @@ const UserProfile = () => {
 
       {/* Tabs */}
       <Tabs defaultValue="spots" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="spots">Spots</TabsTrigger>
           <TabsTrigger value="reviews">Avis</TabsTrigger>
           <TabsTrigger value="equipment">Matériel</TabsTrigger>
+          <TabsTrigger value="feed">Publications</TabsTrigger>
         </TabsList>
 
         <TabsContent value="spots" className="space-y-4 mt-4">
@@ -276,6 +300,45 @@ const UserProfile = () => {
 
         <TabsContent value="equipment" className="mt-4">
           <FishingEquipment userId={userId} isOwnProfile={isOwnProfile} />
+        </TabsContent>
+
+        <TabsContent value="feed" className="mt-4">
+          {posts.length === 0 ? (
+            <p className="text-center text-muted-foreground py-8">
+              Aucune publication
+            </p>
+          ) : (
+            <div className="grid grid-cols-3 gap-1">
+              {posts.map((post) => (
+                <div
+                  key={post.id}
+                  className="relative aspect-square cursor-pointer group"
+                >
+                  <img
+                    src={post.image}
+                    alt={post.caption || "Publication"}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
+                    <div className="text-white flex items-center gap-4">
+                      {post.fish_species && (
+                        <div className="flex items-center gap-1">
+                          <Fish className="w-4 h-4" />
+                          <span className="text-sm">{post.fish_species}</span>
+                        </div>
+                      )}
+                      {post.weight && (
+                        <div className="flex items-center gap-1">
+                          <Weight className="w-4 h-4" />
+                          <span className="text-sm">{post.weight}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </TabsContent>
       </Tabs>
     </div>

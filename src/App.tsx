@@ -16,6 +16,7 @@ import Community from "./pages/Community";
 import UserProfile from "./pages/UserProfile";
 import Settings from "./pages/Settings";
 import Equipment from "./pages/Equipment";
+import Feed from "./pages/Feed";
 import TabBar from "./components/TabBar";
 
 const queryClient = new QueryClient();
@@ -40,6 +41,7 @@ const App = () => (
               <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
               <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
               <Route path="/equipment" element={<ProtectedRoute><Equipment /></ProtectedRoute>} />
+              <Route path="/feed" element={<ProtectedRoute><Feed /></ProtectedRoute>} />
             </Routes>
             <TabBar />
           </div>

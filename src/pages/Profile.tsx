@@ -23,7 +23,7 @@ const stats = [
 const menuItems = [
   { label: "Mes spots", icon: MapPin, action: "mySpots" as const },
   { label: "Mon matériel", icon: Package, action: "equipment" as const },
-  { label: "Mes prises", icon: Fish, action: "myCatches" as const },
+  { label: "Mon fil", icon: Fish, action: "myFeed" as const },
   { label: "Paramètres", icon: Settings, action: "settings" as const },
 ];
 
@@ -269,11 +269,8 @@ const Profile = () => {
       case "equipment":
         navigate("/equipment");
         break;
-      case "myCatches":
-        toast({
-          title: "Bientôt disponible",
-          description: "La fonctionnalité Mes prises sera bientôt disponible",
-        });
+      case "myFeed":
+        navigate("/feed");
         break;
       case "settings":
         navigate("/settings");

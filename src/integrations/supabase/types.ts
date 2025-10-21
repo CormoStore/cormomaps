@@ -76,6 +76,59 @@ export type Database = {
         }
         Relationships: []
       }
+      fishing_posts: {
+        Row: {
+          caption: string | null
+          created_at: string
+          fish_species: string | null
+          id: string
+          image: string
+          latitude: number | null
+          length: string | null
+          location: string | null
+          longitude: number | null
+          updated_at: string
+          user_id: string
+          weight: string | null
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string
+          fish_species?: string | null
+          id?: string
+          image: string
+          latitude?: number | null
+          length?: string | null
+          location?: string | null
+          longitude?: number | null
+          updated_at?: string
+          user_id: string
+          weight?: string | null
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string
+          fish_species?: string | null
+          id?: string
+          image?: string
+          latitude?: number | null
+          length?: string | null
+          location?: string | null
+          longitude?: number | null
+          updated_at?: string
+          user_id?: string
+          weight?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fishing_posts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       fishing_spots: {
         Row: {
           created_at: string
