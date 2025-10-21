@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { Search, Filter, MapPin } from "lucide-react";
-import Map, { Marker, NavigationControl, GeolocateControl } from "react-map-gl";
+import Map, { Marker, NavigationControl, GeolocateControl } from "react-map-gl/mapbox";
 import { fishingSpots } from "@/data/spots";
 import SpotDetail from "@/components/SpotDetail";
 import { FishingSpot } from "@/types";
