@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { CreditCard, Plus, Calendar, Building2, Trash2, QrCode } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -72,57 +72,37 @@ const FishingLicense = () => {
 
   const startScanning = async () => {
     setIsScanning(true);
-    const { Html5Qrcode } = await import("html5-qrcode");
+    const { Html5Qrcode, Html5QrcodeSupportedFormats } = await import("html5-qrcode");
     
     try {
+      const devices = await Html5Qrcode.getCameras();
+      if (!devices || devices.length === 0) throw new Error("Aucune caméra disponible");
+      const preferred = devices.find((d) => /back|rear|environment/i.test(d.label || ""));
+      const cameraId = preferred?.id || devices[0].id;
+
       const html5QrCode = new Html5Qrcode("qr-reader");
       scannerRef.current = html5QrCode;
 
-      // Try with environment camera first, fallback to any camera
       const config = {
         fps: 10,
         qrbox: { width: 250, height: 250 },
       };
 
-      try {
-        await html5QrCode.start(
-          { facingMode: "environment" },
-          config,
-          async (decodedText) => {
-            // Generate QR code image from decoded text
-            const QRCode = (await import("qrcode")).default;
-            const qrCodeDataUrl = await QRCode.toDataURL(decodedText, {
-              width: 256,
-              margin: 2,
-            });
-            setScannedQRCode(qrCodeDataUrl);
-            stopScanning();
-            toast.success("QR Code scanné avec succès");
-          },
-          (error) => {
-            // Ignore errors during scanning
-          }
-        );
-      } catch (envError) {
-        // Fallback: try any available camera
-        await html5QrCode.start(
-          { facingMode: "user" },
-          config,
-          async (decodedText) => {
-            const QRCode = (await import("qrcode")).default;
-            const qrCodeDataUrl = await QRCode.toDataURL(decodedText, {
-              width: 256,
-              margin: 2,
-            });
-            setScannedQRCode(qrCodeDataUrl);
-            stopScanning();
-            toast.success("QR Code scanné avec succès");
-          },
-          (error) => {
-            // Ignore errors during scanning
-          }
-        );
-      }
+      await html5QrCode.start(
+        cameraId,
+        config,
+        async (decodedText) => {
+          const QRCode = (await import("qrcode")).default;
+          const qrCodeDataUrl = await QRCode.toDataURL(decodedText, {
+            width: 256,
+            margin: 2,
+          });
+          setScannedQRCode(qrCodeDataUrl);
+          stopScanning();
+          toast.success("QR Code scanné avec succès");
+        },
+        () => {}
+      );
     } catch (err) {
       console.error("Error starting scanner:", err);
       toast.error("Impossible d'accéder à la caméra. Vérifiez les permissions.");
@@ -207,7 +187,7 @@ const FishingLicense = () => {
     <div className="min-h-screen bg-background pb-24 pt-4 px-4">
       <div className="flex items-center justify-between mb-6 mt-2">
         <h1 className="text-2xl sm:text-3xl font-bold">Mes cartes de pêche</h1>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <Dialog open={isDialogOpen} onOpenChange={(open) => { setIsDialogOpen(open); if (!open) stopScanning(); }}>
           <DialogTrigger asChild>
             <Button size="sm" className="gap-2">
               <Plus className="w-4 h-4" />
@@ -217,6 +197,9 @@ const FishingLicense = () => {
           <DialogContent className="w-[95%] max-w-md rounded-2xl">
             <DialogHeader>
               <DialogTitle>Ajouter une carte de pêche</DialogTitle>
+              <DialogDescription id="license-dialog-desc">
+                Scannez le QR code de votre carte ou saisissez les informations manuellement.
+              </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
               {!isScanning ? (
