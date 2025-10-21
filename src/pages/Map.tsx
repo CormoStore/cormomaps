@@ -11,7 +11,7 @@ import "mapbox-gl/dist/mapbox-gl.css";
 const MAPBOX_TOKEN = "pk.eyJ1IjoiY29ybW9zdG9yZSIsImEiOiJjbWgwZ2U4NWUwaG9tNWtxdWM0cTEyamtyIn0.eCz_pytNEYgJyKjnP9J_Lw";
 
 const MapPage = () => {
-  const { spots, addSpot, updateSpot } = useSpots();
+  const { spots, addSpot, updateSpot, deleteSpot } = useSpots();
   const { toast } = useToast();
   const [selectedSpot, setSelectedSpot] = useState<FishingSpot | null>(null);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
@@ -66,6 +66,14 @@ const MapPage = () => {
     setSelectedSpot(null);
     setMapCenter({ lat: spot.latitude, lng: spot.longitude });
     setShowCreateForm(true);
+  };
+
+  const handleDeleteSpot = (spotId: string) => {
+    deleteSpot(spotId);
+    toast({
+      title: "Spot supprimé",
+      description: "Le spot a été supprimé avec succès",
+    });
   };
 
   return (
@@ -161,6 +169,7 @@ const MapPage = () => {
           isFavorite={favorites.has(selectedSpot.id)}
           onToggleFavorite={() => toggleFavorite(selectedSpot.id)}
           onEdit={selectedSpot.isCustom ? () => handleEditSpot(selectedSpot) : undefined}
+          onDelete={selectedSpot.isCustom ? () => handleDeleteSpot(selectedSpot.id) : undefined}
         />
       )}
 

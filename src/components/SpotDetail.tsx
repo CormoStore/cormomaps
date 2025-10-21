@@ -1,7 +1,17 @@
 import { FishingSpot } from "@/types";
-import { X, Navigation, Heart, Star, FileText, Fish, AlertCircle, CreditCard, Edit, ChevronLeft, ChevronRight } from "lucide-react";
+import { X, Navigation, Heart, Star, FileText, Fish, AlertCircle, CreditCard, Edit, ChevronLeft, ChevronRight, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface SpotDetailProps {
   spot: FishingSpot;
@@ -9,10 +19,12 @@ interface SpotDetailProps {
   isFavorite: boolean;
   onToggleFavorite: () => void;
   onEdit?: () => void;
+  onDelete?: () => void;
 }
 
-const SpotDetail = ({ spot, onClose, isFavorite, onToggleFavorite, onEdit }: SpotDetailProps) => {
+const SpotDetail = ({ spot, onClose, isFavorite, onToggleFavorite, onEdit, onDelete }: SpotDetailProps) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const images = spot.images && spot.images.length > 0 ? spot.images : [spot.image];
 
   const nextImage = () => {
@@ -21,6 +33,12 @@ const SpotDetail = ({ spot, onClose, isFavorite, onToggleFavorite, onEdit }: Spo
 
   const previousImage = () => {
     setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
+  };
+
+  const handleDelete = () => {
+    onDelete?.();
+    setShowDeleteDialog(false);
+    onClose();
   };
 
   return (
@@ -95,6 +113,16 @@ const SpotDetail = ({ spot, onClose, isFavorite, onToggleFavorite, onEdit }: Spo
                   onClick={onEdit}
                 >
                   <Edit className="w-5 h-5" />
+                </Button>
+              )}
+              {spot.isCustom && onDelete && (
+                <Button
+                  size="icon"
+                  variant="outline"
+                  className="rounded-full hover:bg-destructive hover:text-destructive-foreground"
+                  onClick={() => setShowDeleteDialog(true)}
+                >
+                  <Trash2 className="w-5 h-5" />
                 </Button>
               )}
               <Button
@@ -236,6 +264,27 @@ const SpotDetail = ({ spot, onClose, isFavorite, onToggleFavorite, onEdit }: Spo
           </div>
         </div>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Supprimer ce spot ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Cette action est irréversible. Le spot "{spot.name}" sera définitivement supprimé.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

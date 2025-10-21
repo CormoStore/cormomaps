@@ -37,5 +37,15 @@ export const useSpots = () => {
     return false;
   };
 
-  return { spots, addSpot, updateSpot };
+  const deleteSpot = (spotId: string) => {
+    const customSpotsJson = localStorage.getItem(SPOTS_STORAGE_KEY);
+    const customSpots = customSpotsJson ? JSON.parse(customSpotsJson) : [];
+    
+    // Filter out the spot to delete
+    const updatedCustomSpots = customSpots.filter((s: FishingSpot) => s.id !== spotId);
+    localStorage.setItem(SPOTS_STORAGE_KEY, JSON.stringify(updatedCustomSpots));
+    setSpots([...defaultSpots, ...updatedCustomSpots]);
+  };
+
+  return { spots, addSpot, updateSpot, deleteSpot };
 };
