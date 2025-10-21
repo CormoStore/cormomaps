@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Check, X, MapPin } from "lucide-react";
+import { Check, X, MapPin, Upload } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const Admin = () => {
@@ -100,9 +100,15 @@ const Admin = () => {
 
   return (
     <div className="container mx-auto p-4 pb-24">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">Modération des spots</h1>
-        <p className="text-muted-foreground">Gérez les spots de pêche en attente de validation</p>
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold mb-2">Modération des spots</h1>
+          <p className="text-muted-foreground">Gérez les spots de pêche en attente de validation</p>
+        </div>
+        <Button onClick={() => navigate("/import-spots")} size="sm" className="gap-2">
+          <Upload className="w-4 h-4" />
+          <span className="hidden sm:inline">Import AAPPMA</span>
+        </Button>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
