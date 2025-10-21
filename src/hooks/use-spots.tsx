@@ -17,10 +17,25 @@ export const useSpots = () => {
   const addSpot = (spot: FishingSpot) => {
     const customSpotsJson = localStorage.getItem(SPOTS_STORAGE_KEY);
     const customSpots = customSpotsJson ? JSON.parse(customSpotsJson) : [];
-    const updatedCustomSpots = [...customSpots, spot];
+    const updatedCustomSpots = [...customSpots, { ...spot, isCustom: true }];
     localStorage.setItem(SPOTS_STORAGE_KEY, JSON.stringify(updatedCustomSpots));
     setSpots([...defaultSpots, ...updatedCustomSpots]);
   };
 
-  return { spots, addSpot };
+  const updateSpot = (updatedSpot: FishingSpot) => {
+    const customSpotsJson = localStorage.getItem(SPOTS_STORAGE_KEY);
+    const customSpots = customSpotsJson ? JSON.parse(customSpotsJson) : [];
+    
+    // Update in custom spots if it exists
+    const spotIndex = customSpots.findIndex((s: FishingSpot) => s.id === updatedSpot.id);
+    if (spotIndex !== -1) {
+      customSpots[spotIndex] = { ...updatedSpot, isCustom: true };
+      localStorage.setItem(SPOTS_STORAGE_KEY, JSON.stringify(customSpots));
+      setSpots([...defaultSpots, ...customSpots]);
+      return true;
+    }
+    return false;
+  };
+
+  return { spots, addSpot, updateSpot };
 };

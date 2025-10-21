@@ -1,5 +1,5 @@
 import { FishingSpot } from "@/types";
-import { X, Navigation, Heart, Star, FileText, Fish, AlertCircle, CreditCard } from "lucide-react";
+import { X, Navigation, Heart, Star, FileText, Fish, AlertCircle, CreditCard, Edit, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 
@@ -8,24 +8,63 @@ interface SpotDetailProps {
   onClose: () => void;
   isFavorite: boolean;
   onToggleFavorite: () => void;
+  onEdit?: () => void;
 }
 
-const SpotDetail = ({ spot, onClose, isFavorite, onToggleFavorite }: SpotDetailProps) => {
+const SpotDetail = ({ spot, onClose, isFavorite, onToggleFavorite, onEdit }: SpotDetailProps) => {
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const images = spot.images && spot.images.length > 0 ? spot.images : [spot.image];
+
+  const nextImage = () => {
+    setCurrentImageIndex((prev) => (prev + 1) % images.length);
+  };
+
+  const previousImage = () => {
+    setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
+  };
+
   return (
     <div className="fixed inset-0 z-50 bg-black/50 animate-fade-in" onClick={onClose}>
       <div
         className="absolute bottom-0 left-0 right-0 bg-background rounded-t-3xl max-h-[85vh] overflow-y-auto animate-slide-up pb-20"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header Image */}
+        {/* Header Image Carousel */}
         <div className="relative h-48 w-full">
-          <img src={spot.image} alt={spot.name} className="w-full h-full object-cover" />
+          <img src={images[currentImageIndex]} alt={spot.name} className="w-full h-full object-cover" />
           <button
             onClick={onClose}
             className="absolute top-4 right-4 w-8 h-8 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center"
           >
             <X className="w-5 h-5 text-white" />
           </button>
+          
+          {images.length > 1 && (
+            <>
+              <button
+                onClick={previousImage}
+                className="absolute left-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center"
+              >
+                <ChevronLeft className="w-5 h-5 text-white" />
+              </button>
+              <button
+                onClick={nextImage}
+                className="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center"
+              >
+                <ChevronRight className="w-5 h-5 text-white" />
+              </button>
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1">
+                {images.map((_, index) => (
+                  <div
+                    key={index}
+                    className={`w-2 h-2 rounded-full ${
+                      index === currentImageIndex ? "bg-white" : "bg-white/50"
+                    }`}
+                  />
+                ))}
+              </div>
+            </>
+          )}
         </div>
 
         <div className="p-6 space-y-6">
@@ -48,6 +87,16 @@ const SpotDetail = ({ spot, onClose, isFavorite, onToggleFavorite }: SpotDetailP
               </div>
             </div>
             <div className="flex gap-2">
+              {spot.isCustom && onEdit && (
+                <Button
+                  size="icon"
+                  variant="outline"
+                  className="rounded-full"
+                  onClick={onEdit}
+                >
+                  <Edit className="w-5 h-5" />
+                </Button>
+              )}
               <Button
                 size="icon"
                 variant="outline"

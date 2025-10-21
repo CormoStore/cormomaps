@@ -5,6 +5,7 @@ export interface FishingSpot {
   longitude: number;
   rating: number;
   image: string;
+  images?: string[]; // Additional photos
   description: string;
   fish: string[];
   regulations: {
@@ -18,6 +19,7 @@ export interface FishingSpot {
     yearly: string;
   };
   reviews: Review[];
+  isCustom?: boolean; // To identify user-created spots
 }
 
 export interface Review {

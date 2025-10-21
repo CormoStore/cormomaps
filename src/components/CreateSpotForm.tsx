@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { X, MapPin, Camera, Fish, FileText, Scale, Hash, Euro } from "lucide-react";
+import { useState, useRef } from "react";
+import { X, MapPin, Image as ImageIcon, Fish, FileText, Scale, Hash, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -21,25 +21,45 @@ interface CreateSpotFormProps {
   onClose: () => void;
   onSubmit: (spot: FishingSpot) => void;
   initialCoordinates?: { lat: number; lng: number };
+  editingSpot?: FishingSpot;
 }
 
-const CreateSpotForm = ({ onClose, onSubmit, initialCoordinates }: CreateSpotFormProps) => {
+const CreateSpotForm = ({ onClose, onSubmit, initialCoordinates, editingSpot }: CreateSpotFormProps) => {
   const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [additionalImages, setAdditionalImages] = useState<string[]>(editingSpot?.images || []);
   const [formData, setFormData] = useState({
-    name: "",
-    latitude: initialCoordinates?.lat.toFixed(6) || "",
-    longitude: initialCoordinates?.lng.toFixed(6) || "",
-    description: "",
-    fish: "",
-    permitRequired: true,
-    minSize: "",
-    quotas: "",
-    pricingDaily: "",
-    pricingDay24h: "",
-    pricingYearly: "",
+    name: editingSpot?.name || "",
+    latitude: editingSpot?.latitude.toFixed(6) || initialCoordinates?.lat.toFixed(6) || "",
+    longitude: editingSpot?.longitude.toFixed(6) || initialCoordinates?.lng.toFixed(6) || "",
+    description: editingSpot?.description || "",
+    fish: editingSpot?.fish.join(", ") || "",
+    permitRequired: editingSpot?.regulations.permit ?? true,
+    minSize: editingSpot?.regulations.minSize || "",
+    quotas: editingSpot?.regulations.quotas || "",
+    pricingDaily: editingSpot?.pricing?.daily || "",
+    pricingDay24h: editingSpot?.pricing?.day24h || "",
+    pricingYearly: editingSpot?.pricing?.yearly || "",
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+
+    Array.from(files).forEach((file) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setAdditionalImages((prev) => [...prev, reader.result as string]);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const removeImage = (index: number) => {
+    setAdditionalImages((prev) => prev.filter((_, i) => i !== index));
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,13 +87,14 @@ const CreateSpotForm = ({ onClose, onSubmit, initialCoordinates }: CreateSpotFor
         return;
       }
 
-      const newSpot: FishingSpot = {
-        id: `custom-${Date.now()}`,
+      const spotData: FishingSpot = {
+        id: editingSpot?.id || `custom-${Date.now()}`,
         name: formData.name,
         latitude: lat,
         longitude: lng,
-        rating: 0,
-        image: "https://images.unsplash.com/photo-1533743983669-94fa5c4338ec?w=800",
+        rating: editingSpot?.rating || 0,
+        image: additionalImages[0] || editingSpot?.image || "https://images.unsplash.com/photo-1533743983669-94fa5c4338ec?w=800",
+        images: additionalImages.length > 0 ? additionalImages : undefined,
         description: formData.description,
         fish: formData.fish.split(",").map(f => f.trim()),
         regulations: {
@@ -86,13 +107,14 @@ const CreateSpotForm = ({ onClose, onSubmit, initialCoordinates }: CreateSpotFor
           day24h: formData.pricingDay24h,
           yearly: formData.pricingYearly,
         } : undefined,
-        reviews: [],
+        reviews: editingSpot?.reviews || [],
+        isCustom: editingSpot?.isCustom,
       };
 
-      onSubmit(newSpot);
+      onSubmit(spotData);
       toast({
-        title: "Spot créé !",
-        description: "Votre nouveau spot a été ajouté avec succès.",
+        title: editingSpot ? "Spot modifié !" : "Spot créé !",
+        description: editingSpot ? "Les modifications ont été enregistrées." : "Votre nouveau spot a été ajouté avec succès.",
       });
       onClose();
     } catch (error) {
@@ -115,7 +137,7 @@ const CreateSpotForm = ({ onClose, onSubmit, initialCoordinates }: CreateSpotFor
       <div className="relative w-full sm:max-w-lg bg-background rounded-t-3xl sm:rounded-3xl shadow-2xl animate-slide-in-right max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="sticky top-0 bg-background/95 backdrop-blur-lg border-b border-border p-4 flex items-center justify-between">
-          <h2 className="text-xl font-bold">Créer un spot</h2>
+          <h2 className="text-xl font-bold">{editingSpot ? "Modifier le spot" : "Créer un spot"}</h2>
           <button
             onClick={onClose}
             className="w-8 h-8 rounded-full bg-secondary/50 flex items-center justify-center hover:bg-secondary transition-colors"
@@ -126,6 +148,50 @@ const CreateSpotForm = ({ onClose, onSubmit, initialCoordinates }: CreateSpotFor
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-4 space-y-4">
+          {/* Photos Section */}
+          <div className="space-y-2">
+            <Label>Photos</Label>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={handleImageUpload}
+              className="hidden"
+            />
+            <div className="space-y-3">
+              {additionalImages.length > 0 && (
+                <div className="grid grid-cols-3 gap-2">
+                  {additionalImages.map((img, index) => (
+                    <div key={index} className="relative group">
+                      <img
+                        src={img}
+                        alt={`Photo ${index + 1}`}
+                        className="w-full h-24 object-cover rounded-lg"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeImage(index)}
+                        className="absolute top-1 right-1 w-6 h-6 bg-destructive rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <Trash2 className="w-3 h-3 text-destructive-foreground" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => fileInputRef.current?.click()}
+                className="w-full"
+              >
+                <ImageIcon className="w-4 h-4 mr-2" />
+                Ajouter des photos
+              </Button>
+            </div>
+          </div>
+
           {/* Name */}
           <div className="space-y-2">
             <Label htmlFor="name" className="flex items-center gap-2">
@@ -296,7 +362,7 @@ const CreateSpotForm = ({ onClose, onSubmit, initialCoordinates }: CreateSpotFor
               Annuler
             </Button>
             <Button type="submit" className="flex-1 bg-[hsl(var(--ios-blue))] hover:bg-[hsl(var(--ios-blue))]/90">
-              Créer le spot
+              {editingSpot ? "Enregistrer" : "Créer le spot"}
             </Button>
           </div>
         </form>

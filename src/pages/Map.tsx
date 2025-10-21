@@ -10,10 +10,11 @@ import "mapbox-gl/dist/mapbox-gl.css";
 const MAPBOX_TOKEN = "pk.eyJ1IjoiY29ybW9zdG9yZSIsImEiOiJjbWgwZ2U4NWUwaG9tNWtxdWM0cTEyamtyIn0.eCz_pytNEYgJyKjnP9J_Lw";
 
 const MapPage = () => {
-  const { spots, addSpot } = useSpots();
+  const { spots, addSpot, updateSpot } = useSpots();
   const [selectedSpot, setSelectedSpot] = useState<FishingSpot | null>(null);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [editingSpot, setEditingSpot] = useState<FishingSpot | null>(null);
   const [mapCenter, setMapCenter] = useState<{ lat: number; lng: number } | null>(null);
   const mapRef = useRef(null);
 
@@ -40,7 +41,18 @@ const MapPage = () => {
   };
 
   const handleSubmitSpot = (spot: FishingSpot) => {
-    addSpot(spot);
+    if (editingSpot) {
+      updateSpot(spot);
+      setEditingSpot(null);
+    } else {
+      addSpot(spot);
+    }
+  };
+
+  const handleEditSpot = (spot: FishingSpot) => {
+    setEditingSpot(spot);
+    setSelectedSpot(null);
+    setShowCreateForm(true);
   };
 
   return (
@@ -113,15 +125,20 @@ const MapPage = () => {
           onClose={() => setSelectedSpot(null)}
           isFavorite={favorites.has(selectedSpot.id)}
           onToggleFavorite={() => toggleFavorite(selectedSpot.id)}
+          onEdit={selectedSpot.isCustom ? () => handleEditSpot(selectedSpot) : undefined}
         />
       )}
 
-      {/* Create Spot Form */}
+      {/* Create/Edit Spot Form */}
       {showCreateForm && (
         <CreateSpotForm
-          onClose={() => setShowCreateForm(false)}
+          onClose={() => {
+            setShowCreateForm(false);
+            setEditingSpot(null);
+          }}
           onSubmit={handleSubmitSpot}
           initialCoordinates={mapCenter || undefined}
+          editingSpot={editingSpot || undefined}
         />
       )}
     </div>
