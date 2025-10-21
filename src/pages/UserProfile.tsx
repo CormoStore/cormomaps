@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
 import { Badge } from "@/components/ui/badge";
+import { FishingEquipment } from "@/components/FishingEquipment";
 
 interface Profile {
   id: string;
@@ -180,9 +181,10 @@ const UserProfile = () => {
 
       {/* Tabs */}
       <Tabs defaultValue="spots" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="spots">Spots</TabsTrigger>
           <TabsTrigger value="reviews">Avis</TabsTrigger>
+          <TabsTrigger value="equipment">Matériel</TabsTrigger>
         </TabsList>
 
         <TabsContent value="spots" className="space-y-4 mt-4">
@@ -270,6 +272,10 @@ const UserProfile = () => {
               </Card>
             ))
           )}
+        </TabsContent>
+
+        <TabsContent value="equipment" className="mt-4">
+          <FishingEquipment userId={userId} isOwnProfile={isOwnProfile} />
         </TabsContent>
       </Tabs>
     </div>

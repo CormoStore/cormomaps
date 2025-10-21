@@ -41,7 +41,12 @@ interface Equipment {
   description: string | null;
 }
 
-export function FishingEquipment() {
+interface FishingEquipmentProps {
+  userId?: string;
+  isOwnProfile?: boolean;
+}
+
+export function FishingEquipment({ userId, isOwnProfile = true }: FishingEquipmentProps) {
   const [equipment, setEquipment] = useState<Equipment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [open, setOpen] = useState(false);
@@ -64,13 +69,13 @@ export function FishingEquipment() {
 
   const loadEquipment = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      const targetUserId = userId || (await supabase.auth.getUser()).data.user?.id;
+      if (!targetUserId) return;
 
       const { data, error } = await supabase
         .from("fishing_equipment")
         .select("*")
-        .eq("user_id", user.id)
+        .eq("user_id", targetUserId)
         .order("category", { ascending: true })
         .order("created_at", { ascending: false });
 
@@ -80,7 +85,7 @@ export function FishingEquipment() {
       console.error("Error loading equipment:", error);
       toast({
         title: "Erreur",
-        description: "Impossible de charger votre matériel",
+        description: "Impossible de charger le matériel",
         variant: "destructive",
       });
     } finally {
@@ -178,20 +183,21 @@ export function FishingEquipment() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">Mon Matériel</h2>
-        <Dialog open={open} onOpenChange={(isOpen) => {
-          setOpen(isOpen);
-          if (!isOpen) {
-            setEditingId(null);
-            form.reset();
-          }
-        }}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Ajouter
-            </Button>
-          </DialogTrigger>
+        <h2 className="text-2xl font-bold">{isOwnProfile ? "Mon Matériel" : "Matériel"}</h2>
+        {isOwnProfile && (
+          <Dialog open={open} onOpenChange={(isOpen) => {
+            setOpen(isOpen);
+            if (!isOpen) {
+              setEditingId(null);
+              form.reset();
+            }
+          }}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="h-4 w-4 mr-2" />
+                Ajouter
+              </Button>
+            </DialogTrigger>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>
@@ -273,6 +279,7 @@ export function FishingEquipment() {
             </Form>
           </DialogContent>
         </Dialog>
+        )}
       </div>
 
       <Accordion type="single" collapsible className="w-full">
@@ -297,22 +304,24 @@ export function FishingEquipment() {
                               <CardDescription>{item.brand}</CardDescription>
                             )}
                           </div>
-                          <div className="flex gap-2">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleEdit(item)}
-                            >
-                              <Edit2 className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleDelete(item.id)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
+                          {isOwnProfile && (
+                            <div className="flex gap-2">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleEdit(item)}
+                              >
+                                <Edit2 className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleDelete(item.id)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          )}
                         </div>
                       </CardHeader>
                       {item.description && (
@@ -334,7 +343,9 @@ export function FishingEquipment() {
       {equipment.length === 0 && (
         <Card>
           <CardContent className="py-8 text-center text-muted-foreground">
-            Aucun matériel enregistré. Commencez par ajouter votre premier équipement !
+            {isOwnProfile 
+              ? "Aucun matériel enregistré. Commencez par ajouter votre premier équipement !"
+              : "Aucun matériel enregistré."}
           </CardContent>
         </Card>
       )}
