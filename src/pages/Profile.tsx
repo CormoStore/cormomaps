@@ -28,6 +28,11 @@ const menuItems = [
 
 const profileSchema = z.object({
   full_name: z.string().trim().min(1, "Le nom est requis").max(100, "Le nom est trop long"),
+  username: z.string()
+    .trim()
+    .min(3, "Le nom d'utilisateur doit contenir au moins 3 caractères")
+    .max(20, "Le nom d'utilisateur doit contenir au maximum 20 caractères")
+    .regex(/^[a-zA-Z0-9_-]+$/, "Le nom d'utilisateur ne peut contenir que des lettres, chiffres, tirets et underscores"),
 });
 
 type ProfileFormData = z.infer<typeof profileSchema>;
@@ -46,6 +51,7 @@ const Profile = () => {
     resolver: zodResolver(profileSchema),
     defaultValues: {
       full_name: "",
+      username: "",
     },
   });
 
@@ -69,7 +75,10 @@ const Profile = () => {
       console.error("Error loading profile:", error);
     } else if (data) {
       setProfile(data);
-      form.reset({ full_name: data.full_name || "" });
+      form.reset({ 
+        full_name: data.full_name || "",
+        username: data.username || ""
+      });
     }
     setIsLoading(false);
   };
@@ -194,9 +203,38 @@ const Profile = () => {
   const onSubmit = async (data: ProfileFormData) => {
     if (!user) return;
 
+    // Check if username is already taken by another user
+    const { data: existingUser, error: checkError } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("username", data.username)
+      .neq("id", user.id)
+      .maybeSingle();
+
+    if (checkError) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de vérifier le nom d'utilisateur",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (existingUser) {
+      toast({
+        title: "Erreur",
+        description: "Ce nom d'utilisateur est déjà utilisé",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const { error } = await supabase
       .from("profiles")
-      .update({ full_name: data.full_name })
+      .update({ 
+        full_name: data.full_name,
+        username: data.username
+      })
       .eq("id", user.id);
 
     if (error) {
@@ -210,7 +248,12 @@ const Profile = () => {
         title: "Succès",
         description: "Profil mis à jour avec succès",
       });
-      setProfile({ ...profile, full_name: data.full_name, avatar_url: profile?.avatar_url || null });
+      setProfile({ 
+        ...profile, 
+        full_name: data.full_name, 
+        username: data.username,
+        avatar_url: profile?.avatar_url || null 
+      });
       setIsEditOpen(false);
     }
   };
@@ -290,6 +333,22 @@ const Profile = () => {
                             <FormLabel>Nom complet</FormLabel>
                             <FormControl>
                               <Input placeholder="Votre nom" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="username"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Nom d'utilisateur</FormLabel>
+                            <FormControl>
+                              <div className="relative">
+                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">@</span>
+                                <Input placeholder="username" {...field} className="pl-8" />
+                              </div>
                             </FormControl>
                             <FormMessage />
                           </FormItem>
