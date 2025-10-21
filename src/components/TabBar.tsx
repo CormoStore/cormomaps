@@ -1,4 +1,4 @@
-import { MapPin, Heart, BookOpen, User, Shield } from "lucide-react";
+import { MapPin, Heart, BookOpen, User, Shield, Users } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -8,6 +8,7 @@ const TabBar = () => {
   const tabs = [
     { name: "Carte", path: "/", icon: MapPin },
     { name: "Favoris", path: "/favorites", icon: Heart },
+    { name: "Communauté", path: "/community", icon: Users },
     { name: "Règles", path: "/rules", icon: BookOpen },
     ...(isAdmin ? [{ name: "Admin", path: "/admin", icon: Shield }] : []),
     { name: "Profil", path: "/profile", icon: User },
