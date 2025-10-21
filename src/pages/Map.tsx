@@ -6,6 +6,7 @@ import Map, { Marker, NavigationControl, GeolocateControl } from "react-map-gl/m
 import SpotDetail from "@/components/SpotDetail";
 import CreateSpotForm from "@/components/CreateSpotForm";
 import { useFishingSpots, FishingSpot } from "@/hooks/use-fishing-spots";
+import { useFavorites } from "@/hooks/use-favorites";
 import "mapbox-gl/dist/mapbox-gl.css";
 
 const MAPBOX_TOKEN = "pk.eyJ1IjoiY29ybW9zdG9yZSIsImEiOiJjbWgwZ2U4NWUwaG9tNWtxdWM0cTEyamtyIn0.eCz_pytNEYgJyKjnP9J_Lw";
@@ -14,25 +15,13 @@ const MapPage = () => {
   const { spots, loading, addSpot, updateSpot, deleteSpot } = useFishingSpots();
   const { toast } = useToast();
   const { user, isAdmin } = useAuth();
+  const { isFavorite, toggleFavorite } = useFavorites(user?.id);
   const [selectedSpot, setSelectedSpot] = useState<FishingSpot | null>(null);
-  const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingSpot, setEditingSpot] = useState<FishingSpot | null>(null);
   const [mapCenter, setMapCenter] = useState<{ lat: number; lng: number } | null>(null);
   const [isCreationMode, setIsCreationMode] = useState(false);
   const mapRef = useRef(null);
-
-  const toggleFavorite = (spotId: string) => {
-    setFavorites((prev) => {
-      const newFavorites = new Set(prev);
-      if (newFavorites.has(spotId)) {
-        newFavorites.delete(spotId);
-      } else {
-        newFavorites.add(spotId);
-      }
-      return newFavorites;
-    });
-  };
 
   const handleCreateSpot = () => {
     setIsCreationMode(true);
@@ -171,7 +160,7 @@ const MapPage = () => {
         <SpotDetail
           spot={selectedSpot}
           onClose={() => setSelectedSpot(null)}
-          isFavorite={favorites.has(selectedSpot.id)}
+          isFavorite={isFavorite(selectedSpot.id)}
           onToggleFavorite={() => toggleFavorite(selectedSpot.id)}
           onEdit={selectedSpot.created_by === user?.id ? () => handleEditSpot(selectedSpot) : undefined}
           onDelete={(selectedSpot.created_by === user?.id || isAdmin) ? () => handleDeleteSpot(selectedSpot.id) : undefined}

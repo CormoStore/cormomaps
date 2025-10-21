@@ -1,11 +1,26 @@
 import { Heart, Star, Navigation } from "lucide-react";
-import { fishingSpots } from "@/data/spots";
 import { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useFavorites } from "@/hooks/use-favorites";
+import { useFishingSpots } from "@/hooks/use-fishing-spots";
+import SpotDetail from "@/components/SpotDetail";
 
 const Favorites = () => {
-  const [favorites] = useState<Set<string>>(new Set(["1", "3"]));
+  const { user } = useAuth();
+  const { spots, loading: spotsLoading } = useFishingSpots();
+  const { favorites, loading: favoritesLoading, toggleFavorite, isFavorite } = useFavorites(user?.id);
+  const [selectedSpot, setSelectedSpot] = useState<any>(null);
 
-  const favoriteSpots = fishingSpots.filter((spot) => favorites.has(spot.id));
+  const favoriteSpots = spots.filter((spot) => favorites.has(spot.id));
+  const loading = spotsLoading || favoritesLoading;
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background pb-24 pt-4 px-4 flex items-center justify-center">
+        <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background pb-24 pt-4 px-4">
@@ -24,11 +39,12 @@ const Favorites = () => {
           {favoriteSpots.map((spot) => (
             <div
               key={spot.id}
-              className="bg-card rounded-2xl overflow-hidden shadow-md hover:shadow-lg transition-shadow"
+              className="bg-card rounded-2xl overflow-hidden shadow-md hover:shadow-lg transition-shadow cursor-pointer"
+              onClick={() => setSelectedSpot(spot)}
             >
               <div className="flex gap-4 p-4">
                 <img
-                  src={spot.image}
+                  src={spot.images?.[0] || spot.image}
                   alt={spot.name}
                   className="w-24 h-24 rounded-xl object-cover"
                 />
@@ -52,15 +68,24 @@ const Favorites = () => {
                     </div>
                     <Heart className="w-5 h-5 fill-red-500 text-red-500" />
                   </div>
-                  <div className="flex items-center gap-1 mt-2 text-xs text-muted-foreground">
-                    <Navigation className="w-3 h-3" />
-                    <span>12 km</span>
-                  </div>
+                  <p className="text-xs text-muted-foreground mt-2 line-clamp-2">
+                    {spot.description}
+                  </p>
                 </div>
               </div>
             </div>
           ))}
         </div>
+      )}
+
+      {/* Spot Detail Modal */}
+      {selectedSpot && (
+        <SpotDetail
+          spot={selectedSpot}
+          onClose={() => setSelectedSpot(null)}
+          isFavorite={isFavorite(selectedSpot.id)}
+          onToggleFavorite={() => toggleFavorite(selectedSpot.id)}
+        />
       )}
     </div>
   );
