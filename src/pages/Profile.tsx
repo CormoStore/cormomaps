@@ -272,10 +272,7 @@ const Profile = () => {
         });
         break;
       case "settings":
-        toast({
-          title: "Bientôt disponible",
-          description: "La page de paramètres sera bientôt disponible",
-        });
+        navigate("/settings");
         break;
     }
   };
