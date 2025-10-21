@@ -41,6 +41,8 @@ const FishingLicense = () => {
   const [formData, setFormData] = useState({
     license_number: "",
     license_type: "",
+    issue_date: "",
+    expiry_date: "",
     issuing_organization: "",
   });
 
@@ -118,23 +120,18 @@ const FishingLicense = () => {
       return;
     }
 
-    if (!formData.license_number || !formData.license_type) {
+    if (!formData.license_number || !formData.license_type || !formData.issue_date || !formData.expiry_date) {
       toast.error("Veuillez remplir tous les champs obligatoires");
       return;
     }
-
-    // Calculate dates: January 1st to December 31st of current year
-    const currentYear = new Date().getFullYear();
-    const issue_date = `${currentYear}-01-01`;
-    const expiry_date = `${currentYear}-12-31`;
 
     try {
       const { error } = await supabase.from("fishing_licenses").insert({
         user_id: user.id,
         license_number: formData.license_number,
         license_type: formData.license_type,
-        issue_date,
-        expiry_date,
+        issue_date: formData.issue_date,
+        expiry_date: formData.expiry_date,
         issuing_organization: formData.issuing_organization || null,
         image_url: scannedQRCode,
       });
@@ -147,6 +144,8 @@ const FishingLicense = () => {
       setFormData({
         license_number: "",
         license_type: "",
+        issue_date: "",
+        expiry_date: "",
         issuing_organization: "",
       });
       fetchLicenses();
@@ -240,6 +239,28 @@ const FishingLicense = () => {
                   </div>
 
                   <div>
+                    <Label htmlFor="issue_date">Date d'émission *</Label>
+                    <Input
+                      id="issue_date"
+                      type="date"
+                      value={formData.issue_date}
+                      onChange={(e) => setFormData({ ...formData, issue_date: e.target.value })}
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="expiry_date">Date d'expiration *</Label>
+                    <Input
+                      id="expiry_date"
+                      type="date"
+                      value={formData.expiry_date}
+                      onChange={(e) => setFormData({ ...formData, expiry_date: e.target.value })}
+                      required
+                    />
+                  </div>
+
+                  <div>
                     <Label htmlFor="issuing_organization">Organisation émettrice</Label>
                     <Input
                       id="issuing_organization"
@@ -247,10 +268,6 @@ const FishingLicense = () => {
                       value={formData.issuing_organization}
                       onChange={(e) => setFormData({ ...formData, issuing_organization: e.target.value })}
                     />
-                  </div>
-
-                  <div className="text-sm text-muted-foreground bg-muted/50 p-3 rounded-lg">
-                    La carte sera valable du 1er janvier au 31 décembre {new Date().getFullYear()}
                   </div>
 
                   <Button type="submit" className="w-full">
