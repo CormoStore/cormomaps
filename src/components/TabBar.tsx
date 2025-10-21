@@ -17,7 +17,7 @@ const TabBar = () => {
   ];
   return (
     <div className="ios-tab-bar flex items-center px-1 xs:px-2 sm:px-3 md:px-4 z-50 overflow-x-auto scrollbar-hide">
-      <div className="flex items-center justify-start min-w-max gap-0.5 xs:gap-1 sm:gap-2 md:gap-3">
+      <div className="flex items-center justify-around w-full gap-0.5 xs:gap-1 sm:gap-2 md:gap-3">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           return (
@@ -25,7 +25,7 @@ const TabBar = () => {
               key={tab.path}
               to={tab.path}
               className={({ isActive }) =>
-                `flex flex-col items-center gap-0.5 xs:gap-1 py-1.5 xs:py-2 px-1.5 xs:px-2 sm:px-3 md:px-4 lg:px-5 transition-all duration-200 min-w-[50px] xs:min-w-[60px] sm:min-w-[70px] md:min-w-[80px] ${
+                `flex flex-col items-center gap-0.5 xs:gap-1 py-1.5 xs:py-2 px-1.5 xs:px-2 sm:px-3 md:px-4 lg:px-5 transition-all duration-200 flex-1 min-w-[50px] xs:min-w-[60px] sm:min-w-[70px] md:min-w-[80px] ${
                   isActive ? "text-[hsl(var(--ios-blue))]" : "text-[hsl(var(--ios-gray-5))]"
                 }`
               }
