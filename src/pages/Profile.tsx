@@ -1,8 +1,8 @@
-import { MapPin, Fish, MessageSquare, ChevronRight, LogOut, Shield, Edit2 } from "lucide-react";
+import { MapPin, Fish, MessageSquare, ChevronRight, LogOut, Shield, Edit2, Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import avatarJean from "@/assets/avatar-jean.jpg";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -35,8 +35,10 @@ const Profile = () => {
   const { user, signOut, isAdmin } = useAuth();
   const { toast } = useToast();
   const [isEditOpen, setIsEditOpen] = useState(false);
-  const [profile, setProfile] = useState<{ full_name: string | null } | null>(null);
+  const [profile, setProfile] = useState<{ full_name: string | null; avatar_url: string | null } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const form = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
@@ -57,7 +59,7 @@ const Profile = () => {
     setIsLoading(true);
     const { data, error } = await supabase
       .from("profiles")
-      .select("full_name")
+      .select("full_name, avatar_url")
       .eq("id", user.id)
       .single();
 
@@ -68,6 +70,84 @@ const Profile = () => {
       form.reset({ full_name: data.full_name || "" });
     }
     setIsLoading(false);
+  };
+
+  const handleAvatarChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !user) return;
+
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      toast({
+        title: "Erreur",
+        description: "Le fichier doit être une image",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate file size (max 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      toast({
+        title: "Erreur",
+        description: "L'image doit faire moins de 2MB",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setUploadingAvatar(true);
+
+    try {
+      // Delete old avatar if exists
+      if (profile?.avatar_url) {
+        const oldPath = profile.avatar_url.split("/").pop();
+        if (oldPath) {
+          await supabase.storage
+            .from("avatars")
+            .remove([`${user.id}/${oldPath}`]);
+        }
+      }
+
+      // Upload new avatar
+      const fileExt = file.name.split(".").pop();
+      const fileName = `${Date.now()}.${fileExt}`;
+      const filePath = `${user.id}/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("avatars")
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from("avatars")
+        .getPublicUrl(filePath);
+
+      // Update profile
+      const { error: updateError } = await supabase
+        .from("profiles")
+        .update({ avatar_url: publicUrl })
+        .eq("id", user.id);
+
+      if (updateError) throw updateError;
+
+      setProfile({ ...profile, avatar_url: publicUrl });
+      toast({
+        title: "Succès",
+        description: "Photo de profil mise à jour",
+      });
+    } catch (error) {
+      console.error("Error uploading avatar:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de mettre à jour la photo",
+        variant: "destructive",
+      });
+    } finally {
+      setUploadingAvatar(false);
+    }
   };
 
   const onSubmit = async (data: ProfileFormData) => {
@@ -89,7 +169,7 @@ const Profile = () => {
         title: "Succès",
         description: "Profil mis à jour avec succès",
       });
-      setProfile({ full_name: data.full_name });
+      setProfile({ ...profile, full_name: data.full_name, avatar_url: profile?.avatar_url || null });
       setIsEditOpen(false);
     }
   };
@@ -101,11 +181,27 @@ const Profile = () => {
       {/* User Header */}
       <div className="bg-card rounded-2xl p-6 mb-6 shadow-sm">
         <div className="flex items-center gap-4 mb-4">
-          <img
-            src={avatarJean}
-            alt="Profil"
-            className="w-20 h-20 rounded-full object-cover"
-          />
+          <div className="relative">
+            <img
+              src={profile?.avatar_url || avatarJean}
+              alt="Profil"
+              className="w-20 h-20 rounded-full object-cover"
+            />
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploadingAvatar}
+              className="absolute bottom-0 right-0 w-8 h-8 bg-[hsl(var(--ios-blue))] text-white rounded-full flex items-center justify-center shadow-lg hover:bg-[hsl(var(--ios-blue))]/90 transition-colors disabled:opacity-50"
+            >
+              <Camera className="w-4 h-4" />
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleAvatarChange}
+              className="hidden"
+            />
+          </div>
           <div className="flex-1">
             <div className="flex items-center gap-2">
               <h2 className="text-2xl font-bold">
