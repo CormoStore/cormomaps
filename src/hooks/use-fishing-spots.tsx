@@ -115,25 +115,17 @@ export const useFishingSpots = () => {
 
       console.log('Moderation result:', moderationData);
 
-      // Determine status based on AI decision
-      let status = 'pending';
-      let toastMessage = "Votre spot est en attente de validation";
-      
-      if (moderationData.decision === 'approve') {
-        status = 'approved';
-        toastMessage = "Votre spot a été publié automatiquement ! ✅";
-      } else if (moderationData.decision === 'reject') {
+      // Check for rejection first
+      if (moderationData.decision === 'reject') {
         toast({
           title: "Spot rejeté",
           description: `Contenu inapproprié détecté: ${moderationData.reason}`,
           variant: "destructive",
         });
         return;
-      } else {
-        toastMessage = "Votre spot est en attente de validation par un modérateur";
       }
 
-      // Insert spot with determined status
+      // Always insert with 'pending' status (RLS requirement)
       const { data, error } = await supabase
         .from("fishing_spots")
         .insert([
@@ -153,7 +145,7 @@ export const useFishingSpots = () => {
             pricing_day24h: spot.pricing_day24h,
             pricing_yearly: spot.pricing_yearly,
             created_by: user.id,
-            status: status,
+            status: 'pending',
           },
         ])
         .select()
@@ -161,10 +153,26 @@ export const useFishingSpots = () => {
 
       if (error) throw error;
 
-      toast({
-        title: "Spot créé !",
-        description: toastMessage,
-      });
+      // If AI approved, auto-approve the spot
+      if (moderationData.decision === 'approve') {
+        const { error: approveError } = await supabase.rpc('auto_approve_spot', {
+          spot_id: data.id
+        });
+        
+        if (approveError) {
+          console.error('Auto-approve error:', approveError);
+        }
+        
+        toast({
+          title: "Spot créé !",
+          description: "Votre spot a été publié automatiquement ! ✅",
+        });
+      } else {
+        toast({
+          title: "Spot créé !",
+          description: "Votre spot est en attente de validation par un modérateur",
+        });
+      }
 
       return data;
     } catch (error) {

@@ -127,6 +127,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      auto_approve_spot: {
+        Args: { spot_id: string }
+        Returns: undefined
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
