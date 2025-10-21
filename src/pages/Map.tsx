@@ -131,7 +131,7 @@ const MapPage = () => {
       {!editingSpot && (
         <button
           onClick={handleCreateSpot}
-          className={`absolute bottom-28 right-4 z-10 w-14 h-14 rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-all animate-scale-in ${
+          className={`absolute bottom-32 right-4 z-[60] w-14 h-14 rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-all animate-scale-in ${
             isCreationMode 
               ? "bg-red-500 animate-pulse" 
               : "bg-[hsl(var(--ios-blue))]"
