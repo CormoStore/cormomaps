@@ -197,7 +197,7 @@ const CreateSpotForm = ({ onClose, onSubmit, initialCoordinates, editingSpot, on
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="p-4 space-y-4">
+        <form onSubmit={handleSubmit} className="p-4 space-y-4 pb-28">
           {/* Photos Section */}
           <div className="space-y-2">
             <Label>Photos</Label>
