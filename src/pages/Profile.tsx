@@ -1,7 +1,17 @@
-import { MapPin, Fish, MessageSquare, ChevronRight, LogOut, Shield } from "lucide-react";
+import { MapPin, Fish, MessageSquare, ChevronRight, LogOut, Shield, Edit2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import avatarJean from "@/assets/avatar-jean.jpg";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 
 const stats = [
   { icon: MapPin, label: "Spots visités", value: "12" },
@@ -15,8 +25,74 @@ const menuItems = [
   { label: "Paramètres", icon: ChevronRight },
 ];
 
+const profileSchema = z.object({
+  full_name: z.string().trim().min(1, "Le nom est requis").max(100, "Le nom est trop long"),
+});
+
+type ProfileFormData = z.infer<typeof profileSchema>;
+
 const Profile = () => {
   const { user, signOut, isAdmin } = useAuth();
+  const { toast } = useToast();
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [profile, setProfile] = useState<{ full_name: string | null } | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const form = useForm<ProfileFormData>({
+    resolver: zodResolver(profileSchema),
+    defaultValues: {
+      full_name: "",
+    },
+  });
+
+  useEffect(() => {
+    if (user) {
+      loadProfile();
+    }
+  }, [user]);
+
+  const loadProfile = async () => {
+    if (!user) return;
+    
+    setIsLoading(true);
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("full_name")
+      .eq("id", user.id)
+      .single();
+
+    if (error) {
+      console.error("Error loading profile:", error);
+    } else if (data) {
+      setProfile(data);
+      form.reset({ full_name: data.full_name || "" });
+    }
+    setIsLoading(false);
+  };
+
+  const onSubmit = async (data: ProfileFormData) => {
+    if (!user) return;
+
+    const { error } = await supabase
+      .from("profiles")
+      .update({ full_name: data.full_name })
+      .eq("id", user.id);
+
+    if (error) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de mettre à jour le profil",
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Succès",
+        description: "Profil mis à jour avec succès",
+      });
+      setProfile({ full_name: data.full_name });
+      setIsEditOpen(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background pb-24 pt-4 px-4">
@@ -31,7 +107,48 @@ const Profile = () => {
             className="w-20 h-20 rounded-full object-cover"
           />
           <div className="flex-1">
-            <h2 className="text-2xl font-bold">{user?.email?.split("@")[0]}</h2>
+            <div className="flex items-center gap-2">
+              <h2 className="text-2xl font-bold">
+                {profile?.full_name || user?.email?.split("@")[0]}
+              </h2>
+              <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <Edit2 className="h-4 w-4" />
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Modifier le profil</DialogTitle>
+                  </DialogHeader>
+                  <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                      <FormField
+                        control={form.control}
+                        name="full_name"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Nom complet</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Votre nom" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <div className="flex gap-2 justify-end">
+                        <Button type="button" variant="outline" onClick={() => setIsEditOpen(false)}>
+                          Annuler
+                        </Button>
+                        <Button type="submit">
+                          Enregistrer
+                        </Button>
+                      </div>
+                    </form>
+                  </Form>
+                </DialogContent>
+              </Dialog>
+            </div>
             <p className="text-muted-foreground text-sm">{user?.email}</p>
             {isAdmin && (
               <div className="flex items-center gap-1 mt-1">
