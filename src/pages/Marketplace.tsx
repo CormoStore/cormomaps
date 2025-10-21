@@ -8,9 +8,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, MapPin, User } from "lucide-react";
+import { Plus, MapPin, User, MessageCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
+import { useMessaging } from "@/hooks/use-messaging";
 
 interface Listing {
   id: string;
@@ -45,6 +46,7 @@ const categories = [
 const Marketplace = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { startConversation } = useMessaging();
   const [listings, setListings] = useState<Listing[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -317,13 +319,23 @@ const Marketplace = () => {
                     </div>
                   )}
                 </CardContent>
-                <CardFooter className="border-t">
+                <CardFooter className="border-t flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <User className="w-4 h-4 text-muted-foreground" />
                     <span className="text-sm text-muted-foreground">
                       {listing.profiles.username}
                     </span>
                   </div>
+                  {user && listing.user_id !== user.id && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => startConversation(user.id, listing.user_id, listing.id)}
+                    >
+                      <MessageCircle className="w-4 h-4 mr-1" />
+                      Contacter
+                    </Button>
+                  )}
                 </CardFooter>
               </Card>
             ))}

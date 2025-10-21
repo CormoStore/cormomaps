@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, MapPin, Fish, MessageSquare, Star, Clock, Weight, Ruler } from "lucide-react";
+import { ArrowLeft, MapPin, Fish, MessageSquare, Star, Clock, Weight, Ruler, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -9,6 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
 import { Badge } from "@/components/ui/badge";
 import { FishingEquipment } from "@/components/FishingEquipment";
+import { useMessaging } from "@/hooks/use-messaging";
 
 interface Profile {
   id: string;
@@ -52,6 +53,7 @@ const UserProfile = () => {
   const { userId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { startConversation } = useMessaging();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [spots, setSpots] = useState<Spot[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -200,6 +202,17 @@ const UserProfile = () => {
             );
           })}
         </div>
+
+        {/* Message button for other users */}
+        {!isOwnProfile && userId && (
+          <Button
+            onClick={() => startConversation(user!.id, userId)}
+            className="w-full mt-4"
+          >
+            <MessageCircle className="w-4 h-4 mr-2" />
+            Envoyer un message
+          </Button>
+        )}
       </div>
 
       {/* Tabs */}

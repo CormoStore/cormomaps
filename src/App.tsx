@@ -18,6 +18,7 @@ import Settings from "./pages/Settings";
 import Equipment from "./pages/Equipment";
 import Feed from "./pages/Feed";
 import Marketplace from "./pages/Marketplace";
+import Messages from "./pages/Messages";
 import TabBar from "./components/TabBar";
 
 const queryClient = new QueryClient();
@@ -44,6 +45,7 @@ const App = () => (
               <Route path="/equipment" element={<ProtectedRoute><Equipment /></ProtectedRoute>} />
               <Route path="/feed" element={<ProtectedRoute><Feed /></ProtectedRoute>} />
               <Route path="/marketplace" element={<ProtectedRoute><Marketplace /></ProtectedRoute>} />
+              <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
             </Routes>
             <TabBar />
           </div>
