@@ -1,18 +1,19 @@
 import { useState, useRef } from "react";
 import { Search, Filter, MapPin, Plus, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 import Map, { Marker, NavigationControl, GeolocateControl } from "react-map-gl/mapbox";
 import SpotDetail from "@/components/SpotDetail";
 import CreateSpotForm from "@/components/CreateSpotForm";
-import { FishingSpot } from "@/types";
-import { useSpots } from "@/hooks/use-spots";
+import { useFishingSpots, FishingSpot } from "@/hooks/use-fishing-spots";
 import "mapbox-gl/dist/mapbox-gl.css";
 
 const MAPBOX_TOKEN = "pk.eyJ1IjoiY29ybW9zdG9yZSIsImEiOiJjbWgwZ2U4NWUwaG9tNWtxdWM0cTEyamtyIn0.eCz_pytNEYgJyKjnP9J_Lw";
 
 const MapPage = () => {
-  const { spots, addSpot, updateSpot, deleteSpot } = useSpots();
+  const { spots, loading, addSpot, updateSpot, deleteSpot } = useFishingSpots();
   const { toast } = useToast();
+  const { user, isAdmin } = useAuth();
   const [selectedSpot, setSelectedSpot] = useState<FishingSpot | null>(null);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -52,13 +53,17 @@ const MapPage = () => {
     }
   };
 
-  const handleSubmitSpot = (spot: FishingSpot) => {
+  const handleSubmitSpot = async (spot: any) => {
     if (editingSpot) {
-      updateSpot(spot);
+      await updateSpot({ ...spot, id: editingSpot.id });
       setEditingSpot(null);
     } else {
-      addSpot(spot);
+      await addSpot(spot);
     }
+  };
+
+  const handleDeleteSpot = async (spotId: string) => {
+    await deleteSpot(spotId);
   };
 
   const handleEditSpot = (spot: FishingSpot) => {
@@ -68,13 +73,13 @@ const MapPage = () => {
     setShowCreateForm(true);
   };
 
-  const handleDeleteSpot = (spotId: string) => {
-    deleteSpot(spotId);
-    toast({
-      title: "Spot supprimé",
-      description: "Le spot a été supprimé avec succès",
-    });
-  };
+  if (loading) {
+    return (
+      <div className="h-screen w-full flex items-center justify-center">
+        <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="relative h-screen w-full pb-20">
@@ -168,8 +173,8 @@ const MapPage = () => {
           onClose={() => setSelectedSpot(null)}
           isFavorite={favorites.has(selectedSpot.id)}
           onToggleFavorite={() => toggleFavorite(selectedSpot.id)}
-          onEdit={selectedSpot.isCustom ? () => handleEditSpot(selectedSpot) : undefined}
-          onDelete={selectedSpot.isCustom ? () => handleDeleteSpot(selectedSpot.id) : undefined}
+          onEdit={selectedSpot.created_by === user?.id ? () => handleEditSpot(selectedSpot) : undefined}
+          onDelete={(selectedSpot.created_by === user?.id || isAdmin) ? () => handleDeleteSpot(selectedSpot.id) : undefined}
         />
       )}
 

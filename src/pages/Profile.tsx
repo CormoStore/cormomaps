@@ -1,5 +1,6 @@
-import { MapPin, Fish, MessageSquare, ChevronRight, LogOut } from "lucide-react";
+import { MapPin, Fish, MessageSquare, ChevronRight, LogOut, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
 import avatarJean from "@/assets/avatar-jean.jpg";
 
 const stats = [
@@ -15,6 +16,8 @@ const menuItems = [
 ];
 
 const Profile = () => {
+  const { user, signOut, isAdmin } = useAuth();
+
   return (
     <div className="min-h-screen bg-background pb-24 pt-4 px-4">
       <h1 className="text-3xl font-bold mb-6 mt-2">Profil</h1>
@@ -24,12 +27,18 @@ const Profile = () => {
         <div className="flex items-center gap-4 mb-4">
           <img
             src={avatarJean}
-            alt="Jean Pêcheur"
+            alt="Profil"
             className="w-20 h-20 rounded-full object-cover"
           />
-          <div>
-            <h2 className="text-2xl font-bold">Jean Pêcheur</h2>
-            <p className="text-muted-foreground">Passionné de pêche depuis 15 ans</p>
+          <div className="flex-1">
+            <h2 className="text-2xl font-bold">{user?.email?.split("@")[0]}</h2>
+            <p className="text-muted-foreground text-sm">{user?.email}</p>
+            {isAdmin && (
+              <div className="flex items-center gap-1 mt-1">
+                <Shield className="w-4 h-4 text-amber-500" />
+                <span className="text-xs font-semibold text-amber-500">Administrateur</span>
+              </div>
+            )}
           </div>
         </div>
 
@@ -73,6 +82,7 @@ const Profile = () => {
       <Button
         variant="destructive"
         className="w-full rounded-xl h-12"
+        onClick={signOut}
       >
         <LogOut className="w-4 h-4 mr-2" />
         Déconnexion

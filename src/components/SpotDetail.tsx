@@ -1,4 +1,4 @@
-import { FishingSpot } from "@/types";
+import { FishingSpot } from "@/hooks/use-fishing-spots";
 import { X, Navigation, Heart, Star, FileText, Fish, AlertCircle, CreditCard, Edit, ChevronLeft, ChevronRight, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
@@ -166,29 +166,29 @@ const SpotDetail = ({ spot, onClose, isFavorite, onToggleFavorite, onEdit, onDel
           </div>
 
           {/* Pricing (only if no permit required) */}
-          {!spot.regulations.permit && spot.pricing && (
+          {!spot.permit_required && (spot.pricing_daily || spot.pricing_day24h || spot.pricing_yearly) && (
             <div>
               <div className="flex items-center gap-2 mb-3">
                 <CreditCard className="w-5 h-5 text-[hsl(var(--ios-blue))]" />
                 <h3 className="font-semibold text-lg">Grille tarifaire</h3>
               </div>
               <div className="grid grid-cols-1 gap-3">
-                {spot.pricing.daily && (
+                {spot.pricing_daily && (
                   <div className="flex items-center justify-between p-3 bg-secondary/50 rounded-xl">
                     <span className="font-medium">Journée</span>
-                    <span className="text-[hsl(var(--ios-blue))] font-semibold">{spot.pricing.daily}</span>
+                    <span className="text-[hsl(var(--ios-blue))] font-semibold">{spot.pricing_daily}</span>
                   </div>
                 )}
-                {spot.pricing.day24h && (
+                {spot.pricing_day24h && (
                   <div className="flex items-center justify-between p-3 bg-secondary/50 rounded-xl">
                     <span className="font-medium">24 heures</span>
-                    <span className="text-[hsl(var(--ios-blue))] font-semibold">{spot.pricing.day24h}</span>
+                    <span className="text-[hsl(var(--ios-blue))] font-semibold">{spot.pricing_day24h}</span>
                   </div>
                 )}
-                {spot.pricing.yearly && (
+                {spot.pricing_yearly && (
                   <div className="flex items-center justify-between p-3 bg-secondary/50 rounded-xl">
                     <span className="font-medium">Carte annuelle</span>
-                    <span className="text-[hsl(var(--ios-blue))] font-semibold">{spot.pricing.yearly}</span>
+                    <span className="text-[hsl(var(--ios-blue))] font-semibold">{spot.pricing_yearly}</span>
                   </div>
                 )}
               </div>
@@ -207,61 +207,28 @@ const SpotDetail = ({ spot, onClose, isFavorite, onToggleFavorite, onEdit, onDel
                 <div>
                   <span className="font-medium">Permis requis:</span>{" "}
                   <span className="text-muted-foreground">
-                    {spot.regulations.permit ? "Oui" : "Non"}
+                    {spot.permit_required ? "Oui" : "Non"}
                   </span>
                 </div>
               </div>
-              <div className="flex items-start gap-2">
-                <AlertCircle className="w-4 h-4 text-muted-foreground mt-0.5" />
-                <div>
-                  <span className="font-medium">Taille minimale:</span>{" "}
-                  <span className="text-muted-foreground">{spot.regulations.minSize}</span>
-                </div>
-              </div>
-              <div className="flex items-start gap-2">
-                <AlertCircle className="w-4 h-4 text-muted-foreground mt-0.5" />
-                <div>
-                  <span className="font-medium">Quotas:</span>{" "}
-                  <span className="text-muted-foreground">{spot.regulations.quotas}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Reviews */}
-          <div>
-            <h3 className="font-semibold text-lg mb-3">Avis de la communauté</h3>
-            <div className="space-y-4">
-              {spot.reviews.map((review) => (
-                <div key={review.id} className="p-4 bg-secondary rounded-2xl">
-                  <div className="flex items-start gap-3">
-                    <img
-                      src={review.userAvatar}
-                      alt={review.userName}
-                      className="w-10 h-10 rounded-full object-cover"
-                    />
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="font-medium">{review.userName}</span>
-                        <span className="text-xs text-muted-foreground">{review.date}</span>
-                      </div>
-                      <div className="flex items-center gap-1 mb-2">
-                        {Array.from({ length: 5 }).map((_, i) => (
-                          <Star
-                            key={i}
-                            className={`w-3 h-3 ${
-                              i < review.rating
-                                ? "fill-yellow-400 text-yellow-400"
-                                : "text-gray-300"
-                            }`}
-                          />
-                        ))}
-                      </div>
-                      <p className="text-sm text-muted-foreground">{review.comment}</p>
-                    </div>
+              {spot.min_size && (
+                <div className="flex items-start gap-2">
+                  <AlertCircle className="w-4 h-4 text-muted-foreground mt-0.5" />
+                  <div>
+                    <span className="font-medium">Taille minimale:</span>{" "}
+                    <span className="text-muted-foreground">{spot.min_size}</span>
                   </div>
                 </div>
-              ))}
+              )}
+              {spot.quotas && (
+                <div className="flex items-start gap-2">
+                  <AlertCircle className="w-4 h-4 text-muted-foreground mt-0.5" />
+                  <div>
+                    <span className="font-medium">Quotas:</span>{" "}
+                    <span className="text-muted-foreground">{spot.quotas}</span>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

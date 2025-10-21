@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { FishingSpot } from "@/types";
+import { FishingSpot as DBSpot } from "@/hooks/use-fishing-spots";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 
@@ -19,9 +19,9 @@ const createSpotSchema = z.object({
 
 interface CreateSpotFormProps {
   onClose: () => void;
-  onSubmit: (spot: FishingSpot) => void;
+  onSubmit: (spot: any) => void;
   initialCoordinates?: { lat: number; lng: number };
-  editingSpot?: FishingSpot;
+  editingSpot?: DBSpot;
   onActivateMapMode?: () => void;
 }
 
@@ -38,12 +38,12 @@ const CreateSpotForm = ({ onClose, onSubmit, initialCoordinates, editingSpot, on
     longitude: editingSpot?.longitude.toFixed(6) || initialCoordinates?.lng.toFixed(6) || "",
     description: editingSpot?.description || "",
     fish: editingSpot?.fish.join(", ") || "",
-    permitRequired: editingSpot?.regulations.permit ?? true,
-    minSize: editingSpot?.regulations.minSize || "",
-    quotas: editingSpot?.regulations.quotas || "",
-    pricingDaily: editingSpot?.pricing?.daily || "",
-    pricingDay24h: editingSpot?.pricing?.day24h || "",
-    pricingYearly: editingSpot?.pricing?.yearly || "",
+    permitRequired: editingSpot?.permit_required ?? true,
+    minSize: editingSpot?.min_size || "",
+    quotas: editingSpot?.quotas || "",
+    pricingDaily: editingSpot?.pricing_daily || "",
+    pricingDay24h: editingSpot?.pricing_day24h || "",
+    pricingYearly: editingSpot?.pricing_yearly || "",
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -144,31 +144,22 @@ const CreateSpotForm = ({ onClose, onSubmit, initialCoordinates, editingSpot, on
         return;
       }
 
-      const spotData: FishingSpot = {
-        id: editingSpot?.id || `custom-${Date.now()}`,
+      const spotData = {
         name: formData.name,
         latitude: lat,
         longitude: lng,
         rating: editingSpot?.rating || 0,
-        image: additionalImages[0] || editingSpot?.image || "https://images.unsplash.com/photo-1533743983669-94fa5c4338ec?w=800",
+        image: additionalImages[0] || editingSpot?.image,
         images: additionalImages.length > 0 ? additionalImages : undefined,
         description: formData.description,
         fish: formData.fish.split(",").map(f => f.trim()),
-        regulations: {
-          permit: formData.permitRequired,
-          minSize: formData.minSize,
-          quotas: formData.quotas,
-        },
-        pricing: !formData.permitRequired && (formData.pricingDaily || formData.pricingDay24h || formData.pricingYearly) ? {
-          daily: formData.pricingDaily,
-          day24h: formData.pricingDay24h,
-          yearly: formData.pricingYearly,
-        } : undefined,
-        reviews: editingSpot?.reviews || [],
-        isCustom: true,
+        permit_required: formData.permitRequired,
+        min_size: formData.minSize,
+        quotas: formData.quotas,
+        pricing_daily: formData.pricingDaily,
+        pricing_day24h: formData.pricingDay24h,
+        pricing_yearly: formData.pricingYearly,
       };
-
-      console.log("Spot créé/modifié avec isCustom:", spotData.isCustom, spotData);
 
       onSubmit(spotData);
       toast({
