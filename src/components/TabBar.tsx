@@ -9,10 +9,12 @@ const TabBar = () => {
     { name: "Carte", path: "/", icon: MapPin },
     { name: "Favoris", path: "/favorites", icon: Heart },
     { name: "Communauté", path: "/community", icon: Users },
-    { name: "Marketplace", path: "/marketplace", icon: ShoppingBag },
     { name: "Messages", path: "/messages", icon: MessageCircle },
     { name: "Règles", path: "/rules", icon: BookOpen },
-    ...(isAdmin ? [{ name: "Admin", path: "/admin", icon: Shield }] : []),
+    ...(isAdmin ? [
+      { name: "Marketplace", path: "/marketplace", icon: ShoppingBag },
+      { name: "Admin", path: "/admin", icon: Shield }
+    ] : []),
     { name: "Profil", path: "/profile", icon: User },
   ];
   return (
