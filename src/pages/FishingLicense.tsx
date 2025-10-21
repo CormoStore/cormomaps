@@ -78,24 +78,54 @@ const FishingLicense = () => {
       const html5QrCode = new Html5Qrcode("qr-reader");
       scannerRef.current = html5QrCode;
 
-      await html5QrCode.start(
-        { facingMode: "environment" },
-        {
-          fps: 10,
-          qrbox: { width: 250, height: 250 },
-        },
-        (decodedText) => {
-          setScannedQRCode(decodedText);
-          stopScanning();
-          toast.success("QR Code scanné avec succès");
-        },
-        (error) => {
-          // Ignore errors during scanning
-        }
-      );
+      // Try with environment camera first, fallback to any camera
+      const config = {
+        fps: 10,
+        qrbox: { width: 250, height: 250 },
+      };
+
+      try {
+        await html5QrCode.start(
+          { facingMode: "environment" },
+          config,
+          async (decodedText) => {
+            // Generate QR code image from decoded text
+            const QRCode = (await import("qrcode")).default;
+            const qrCodeDataUrl = await QRCode.toDataURL(decodedText, {
+              width: 256,
+              margin: 2,
+            });
+            setScannedQRCode(qrCodeDataUrl);
+            stopScanning();
+            toast.success("QR Code scanné avec succès");
+          },
+          (error) => {
+            // Ignore errors during scanning
+          }
+        );
+      } catch (envError) {
+        // Fallback: try any available camera
+        await html5QrCode.start(
+          { facingMode: "user" },
+          config,
+          async (decodedText) => {
+            const QRCode = (await import("qrcode")).default;
+            const qrCodeDataUrl = await QRCode.toDataURL(decodedText, {
+              width: 256,
+              margin: 2,
+            });
+            setScannedQRCode(qrCodeDataUrl);
+            stopScanning();
+            toast.success("QR Code scanné avec succès");
+          },
+          (error) => {
+            // Ignore errors during scanning
+          }
+        );
+      }
     } catch (err) {
       console.error("Error starting scanner:", err);
-      toast.error("Impossible d'accéder à la caméra");
+      toast.error("Impossible d'accéder à la caméra. Vérifiez les permissions.");
       setIsScanning(false);
     }
   };
