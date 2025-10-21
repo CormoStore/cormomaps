@@ -125,6 +125,45 @@ export type Database = {
         }
         Relationships: []
       }
+      fishing_licenses: {
+        Row: {
+          created_at: string
+          expiry_date: string
+          id: string
+          image_url: string | null
+          issue_date: string
+          issuing_organization: string | null
+          license_number: string
+          license_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expiry_date: string
+          id?: string
+          image_url?: string | null
+          issue_date: string
+          issuing_organization?: string | null
+          license_number: string
+          license_type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expiry_date?: string
+          id?: string
+          image_url?: string | null
+          issue_date?: string
+          issuing_organization?: string | null
+          license_number?: string
+          license_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       fishing_posts: {
         Row: {
           caption: string | null

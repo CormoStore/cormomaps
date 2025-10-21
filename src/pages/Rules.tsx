@@ -1,4 +1,4 @@
-import { FileText, Ruler, Calendar, Fish, ChevronRight, Info } from "lucide-react";
+import { FileText, Ruler, Calendar, Fish, ChevronRight, Info, CreditCard } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { regions } from "@/data/regions";
 
@@ -31,6 +31,23 @@ const Rules = () => {
   return (
     <div className="min-h-screen bg-background pb-24 pt-4 px-4">
       <h1 className="text-3xl font-bold mb-6 mt-2">Règles de pêche</h1>
+
+      {/* My Fishing License */}
+      <div className="mb-8">
+        <button
+          onClick={() => navigate("/fishing-license")}
+          className="w-full bg-gradient-to-r from-[hsl(var(--ios-blue))]/10 to-[hsl(var(--ios-blue))]/5 rounded-2xl p-4 flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow"
+        >
+          <div className="w-12 h-12 rounded-full bg-[hsl(var(--ios-blue))]/20 flex items-center justify-center flex-shrink-0">
+            <CreditCard className="w-6 h-6 text-[hsl(var(--ios-blue))]" />
+          </div>
+          <div className="flex-1 text-left">
+            <h3 className="font-semibold mb-1">Ma carte de pêche</h3>
+            <p className="text-sm text-muted-foreground">Gérez vos cartes et permis de pêche</p>
+          </div>
+          <ChevronRight className="w-5 h-5 text-muted-foreground" />
+        </button>
+      </div>
 
       {/* General Rules */}
       <div className="mb-8">

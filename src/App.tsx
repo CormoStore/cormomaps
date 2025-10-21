@@ -19,6 +19,7 @@ import Equipment from "./pages/Equipment";
 import Feed from "./pages/Feed";
 import Marketplace from "./pages/Marketplace";
 import Messages from "./pages/Messages";
+import FishingLicense from "./pages/FishingLicense";
 import TabBar from "./components/TabBar";
 
 const queryClient = new QueryClient();
@@ -37,6 +38,7 @@ const App = () => (
               <Route path="/favorites" element={<ProtectedRoute><Favorites /></ProtectedRoute>} />
               <Route path="/rules" element={<ProtectedRoute><Rules /></ProtectedRoute>} />
               <Route path="/rules/region/:regionId" element={<ProtectedRoute><RegionRules /></ProtectedRoute>} />
+              <Route path="/fishing-license" element={<ProtectedRoute><FishingLicense /></ProtectedRoute>} />
               <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
               <Route path="/community" element={<ProtectedRoute><Community /></ProtectedRoute>} />
               <Route path="/user/:userId" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
