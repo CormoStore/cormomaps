@@ -10,6 +10,7 @@ import Favorites from "./pages/Favorites";
 import Rules from "./pages/Rules";
 import Profile from "./pages/Profile";
 import Auth from "./pages/Auth";
+import Admin from "./pages/Admin";
 import TabBar from "./components/TabBar";
 
 const queryClient = new QueryClient();
@@ -27,6 +28,7 @@ const App = () => (
               <Route path="/" element={<ProtectedRoute><Map /></ProtectedRoute>} />
               <Route path="/favorites" element={<ProtectedRoute><Favorites /></ProtectedRoute>} />
               <Route path="/rules" element={<ProtectedRoute><Rules /></ProtectedRoute>} />
+              <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
               <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
             </Routes>
             <TabBar />

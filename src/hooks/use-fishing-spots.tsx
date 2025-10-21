@@ -22,6 +22,7 @@ export interface FishingSpot {
   created_by?: string;
   created_at?: string;
   updated_at?: string;
+  status?: string;
 }
 
 export const useFishingSpots = () => {
@@ -106,6 +107,7 @@ export const useFishingSpots = () => {
             pricing_day24h: spot.pricing_day24h,
             pricing_yearly: spot.pricing_yearly,
             created_by: user.id,
+            status: 'pending',
           },
         ])
         .select()
@@ -115,7 +117,7 @@ export const useFishingSpots = () => {
 
       toast({
         title: "Spot créé !",
-        description: "Votre spot a été ajouté avec succès",
+        description: "Votre spot est en attente de validation par un administrateur",
       });
 
       return data;
@@ -217,5 +219,69 @@ export const useFishingSpots = () => {
     }
   };
 
-  return { spots, loading, addSpot, updateSpot, deleteSpot };
+  const approveSpot = async (spotId: string) => {
+    if (!user) {
+      toast({
+        title: "Erreur",
+        description: "Vous devez être connecté",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from("fishing_spots")
+        .update({ status: 'approved' })
+        .eq("id", spotId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Spot approuvé",
+        description: "Le spot est maintenant visible sur la carte",
+      });
+    } catch (error) {
+      console.error("Error approving spot:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible d'approuver le spot",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const rejectSpot = async (spotId: string) => {
+    if (!user) {
+      toast({
+        title: "Erreur",
+        description: "Vous devez être connecté",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from("fishing_spots")
+        .update({ status: 'rejected' })
+        .eq("id", spotId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Spot rejeté",
+        description: "Le spot a été rejeté",
+      });
+    } catch (error) {
+      console.error("Error rejecting spot:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de rejeter le spot",
+        variant: "destructive",
+      });
+    }
+  };
+
+  return { spots, loading, addSpot, updateSpot, deleteSpot, approveSpot, rejectSpot };
 };

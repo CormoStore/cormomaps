@@ -33,6 +33,7 @@ export type Database = {
           pricing_yearly: string | null
           quotas: string | null
           rating: number | null
+          status: string
           updated_at: string
         }
         Insert: {
@@ -53,6 +54,7 @@ export type Database = {
           pricing_yearly?: string | null
           quotas?: string | null
           rating?: number | null
+          status?: string
           updated_at?: string
         }
         Update: {
@@ -73,6 +75,7 @@ export type Database = {
           pricing_yearly?: string | null
           quotas?: string | null
           rating?: number | null
+          status?: string
           updated_at?: string
         }
         Relationships: []

@@ -1,14 +1,17 @@
-import { MapPin, Heart, BookOpen, User } from "lucide-react";
+import { MapPin, Heart, BookOpen, User, Shield } from "lucide-react";
 import { NavLink } from "react-router-dom";
-
-const tabs = [
-  { name: "Carte", path: "/", icon: MapPin },
-  { name: "Favoris", path: "/favorites", icon: Heart },
-  { name: "Règles", path: "/rules", icon: BookOpen },
-  { name: "Profil", path: "/profile", icon: User },
-];
+import { useAuth } from "@/contexts/AuthContext";
 
 const TabBar = () => {
+  const { isAdmin } = useAuth();
+  
+  const tabs = [
+    { name: "Carte", path: "/", icon: MapPin },
+    { name: "Favoris", path: "/favorites", icon: Heart },
+    { name: "Règles", path: "/rules", icon: BookOpen },
+    ...(isAdmin ? [{ name: "Admin", path: "/admin", icon: Shield }] : []),
+    { name: "Profil", path: "/profile", icon: User },
+  ];
   return (
     <div className="ios-tab-bar flex items-center justify-around px-4 z-50">
       {tabs.map((tab) => {
