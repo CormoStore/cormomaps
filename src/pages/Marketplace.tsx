@@ -162,44 +162,46 @@ const Marketplace = () => {
   return (
     <div className="min-h-screen bg-background pb-20">
       <header className="bg-card border-b border-border sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between mb-4">
-            <h1 className="text-2xl font-bold text-foreground">Marketplace</h1>
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
+          <div className="flex items-center justify-between mb-3 sm:mb-4">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground">Marketplace</h1>
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
-                <Button className="gap-2">
+                <Button className="gap-1 sm:gap-2 text-sm sm:text-base h-9 sm:h-10 px-3 sm:px-4">
                   <Plus className="w-4 h-4" />
-                  Créer une annonce
+                  <span className="hidden xs:inline">Créer une annonce</span>
+                  <span className="xs:hidden">Créer</span>
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+              <DialogContent className="w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
-                  <DialogTitle>Nouvelle annonce</DialogTitle>
+                  <DialogTitle className="text-lg sm:text-xl">Nouvelle annonce</DialogTitle>
                 </DialogHeader>
-                <form onSubmit={handleSubmit} className="space-y-4">
+                <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
                   <div>
-                    <Label htmlFor="title">Titre</Label>
+                    <Label htmlFor="title" className="text-sm">Titre</Label>
                     <Input
                       id="title"
                       value={formData.title}
                       onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                       required
                       placeholder="Ex: Canne carpe 3.60m"
+                      className="text-sm sm:text-base"
                     />
                   </div>
                   <div>
-                    <Label htmlFor="category">Catégorie</Label>
+                    <Label htmlFor="category" className="text-sm">Catégorie</Label>
                     <Select
                       value={formData.category}
                       onValueChange={(value) => setFormData({ ...formData, category: value })}
                       required
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className="text-sm sm:text-base">
                         <SelectValue placeholder="Sélectionner une catégorie" />
                       </SelectTrigger>
                       <SelectContent>
                         {categories.map((cat) => (
-                          <SelectItem key={cat} value={cat}>
+                          <SelectItem key={cat} value={cat} className="text-sm sm:text-base">
                             {cat}
                           </SelectItem>
                         ))}
@@ -207,7 +209,7 @@ const Marketplace = () => {
                     </Select>
                   </div>
                   <div>
-                    <Label htmlFor="price">Prix (€)</Label>
+                    <Label htmlFor="price" className="text-sm">Prix (€)</Label>
                     <Input
                       id="price"
                       type="number"
@@ -216,19 +218,21 @@ const Marketplace = () => {
                       onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                       required
                       placeholder="Ex: 150.00"
+                      className="text-sm sm:text-base"
                     />
                   </div>
                   <div>
-                    <Label htmlFor="location">Localisation</Label>
+                    <Label htmlFor="location" className="text-sm">Localisation</Label>
                     <Input
                       id="location"
                       value={formData.location}
                       onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                       placeholder="Ex: Paris, 75001"
+                      className="text-sm sm:text-base"
                     />
                   </div>
                   <div>
-                    <Label htmlFor="description">Description</Label>
+                    <Label htmlFor="description" className="text-sm">Description</Label>
                     <Textarea
                       id="description"
                       value={formData.description}
@@ -236,10 +240,11 @@ const Marketplace = () => {
                       required
                       rows={4}
                       placeholder="Décrivez votre matériel..."
+                      className="text-sm sm:text-base"
                     />
                   </div>
                   <div>
-                    <Label htmlFor="image">Photo</Label>
+                    <Label htmlFor="image" className="text-sm">Photo</Label>
                     <Input
                       id="image"
                       type="file"
@@ -247,9 +252,10 @@ const Marketplace = () => {
                       onChange={(e) =>
                         setFormData({ ...formData, image: e.target.files?.[0] || null })
                       }
+                      className="text-sm sm:text-base"
                     />
                   </div>
-                  <Button type="submit" className="w-full">
+                  <Button type="submit" className="w-full text-sm sm:text-base">
                     Publier l'annonce
                   </Button>
                 </form>
@@ -257,11 +263,12 @@ const Marketplace = () => {
             </Dialog>
           </div>
 
-          <div className="flex gap-2 overflow-x-auto pb-2">
+          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
             <Button
               variant={selectedCategory === "all" ? "default" : "outline"}
               size="sm"
               onClick={() => setSelectedCategory("all")}
+              className="text-xs sm:text-sm whitespace-nowrap"
             >
               Toutes
             </Button>
@@ -271,6 +278,7 @@ const Marketplace = () => {
                 variant={selectedCategory === cat ? "default" : "outline"}
                 size="sm"
                 onClick={() => setSelectedCategory(cat)}
+                className="text-xs sm:text-sm whitespace-nowrap"
               >
                 {cat}
               </Button>
@@ -279,50 +287,50 @@ const Marketplace = () => {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 py-6">
+      <main className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6">
         {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {[...Array(6)].map((_, i) => (
-              <div key={i} className="h-80 bg-muted animate-pulse rounded-lg" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
+            {[...Array(8)].map((_, i) => (
+              <div key={i} className="h-72 sm:h-80 bg-muted animate-pulse rounded-lg" />
             ))}
           </div>
         ) : listings.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-muted-foreground">Aucune annonce disponible</p>
+            <p className="text-sm sm:text-base text-muted-foreground">Aucune annonce disponible</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
             {listings.map((listing) => (
-              <Card key={listing.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+              <Card key={listing.id} className="overflow-hidden hover:shadow-lg transition-shadow flex flex-col">
                 {listing.images.length > 0 && (
-                  <div className="relative h-48 bg-muted">
+                  <div className="relative h-40 sm:h-48 bg-muted">
                     <img
                       src={listing.images[0]}
                       alt={listing.title}
                       className="w-full h-full object-cover"
                     />
-                    <Badge className="absolute top-2 right-2">{listing.category}</Badge>
+                    <Badge className="absolute top-2 right-2 text-xs">{listing.category}</Badge>
                   </div>
                 )}
-                <CardHeader>
-                  <CardTitle className="text-lg line-clamp-2">{listing.title}</CardTitle>
-                  <p className="text-2xl font-bold text-primary">{listing.price.toFixed(2)} €</p>
+                <CardHeader className="p-3 sm:p-4 pb-2 sm:pb-3">
+                  <CardTitle className="text-base sm:text-lg line-clamp-2">{listing.title}</CardTitle>
+                  <p className="text-xl sm:text-2xl font-bold text-primary">{listing.price.toFixed(2)} €</p>
                 </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground line-clamp-2">
+                <CardContent className="p-3 sm:p-4 pt-0 flex-1">
+                  <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">
                     {listing.description}
                   </p>
                   {listing.location && (
-                    <div className="flex items-center gap-1 mt-2 text-sm text-muted-foreground">
-                      <MapPin className="w-4 h-4" />
-                      {listing.location}
+                    <div className="flex items-center gap-1 mt-2 text-xs sm:text-sm text-muted-foreground">
+                      <MapPin className="w-3 h-3 sm:w-4 sm:h-4" />
+                      <span className="truncate">{listing.location}</span>
                     </div>
                   )}
                 </CardContent>
-                <CardFooter className="border-t flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <User className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">
+                <CardFooter className="border-t p-3 sm:p-4 flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <User className="w-3 h-3 sm:w-4 sm:h-4 text-muted-foreground flex-shrink-0" />
+                    <span className="text-xs sm:text-sm text-muted-foreground truncate">
                       {listing.profiles.username}
                     </span>
                   </div>
@@ -331,9 +339,11 @@ const Marketplace = () => {
                       size="sm"
                       variant="outline"
                       onClick={() => startConversation(user.id, listing.user_id, listing.id)}
+                      className="text-xs sm:text-sm h-8 sm:h-9 px-2 sm:px-3 whitespace-nowrap flex-shrink-0"
                     >
-                      <MessageCircle className="w-4 h-4 mr-1" />
-                      Contacter
+                      <MessageCircle className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                      <span className="hidden xs:inline">Contacter</span>
+                      <span className="xs:hidden">Contact</span>
                     </Button>
                   )}
                 </CardFooter>
