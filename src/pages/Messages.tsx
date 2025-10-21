@@ -205,6 +205,7 @@ const Messages = () => {
             ) : (
               conversations.map((conv) => {
                 const other = getOtherParticipant(conv);
+                const displayName = other.username || "Utilisateur";
                 return (
                   <div
                     key={conv.id}
@@ -216,10 +217,10 @@ const Messages = () => {
                     <div className="flex items-center gap-3">
                       <Avatar>
                         <AvatarImage src={other.avatar_url || undefined} />
-                        <AvatarFallback>{other.username[0].toUpperCase()}</AvatarFallback>
+                        <AvatarFallback>{displayName[0].toUpperCase()}</AvatarFallback>
                       </Avatar>
                       <div className="flex-1 min-w-0">
-                        <p className="font-medium truncate">{other.username}</p>
+                        <p className="font-medium truncate">{displayName}</p>
                         {conv.last_message && (
                           <p className="text-sm text-muted-foreground truncate">
                             {conv.last_message.content}
@@ -260,13 +261,14 @@ const Messages = () => {
                   const conv = conversations.find((c) => c.id === selectedConversation);
                   if (!conv) return null;
                   const other = getOtherParticipant(conv);
+                  const displayName = other.username || "Utilisateur";
                   return (
                     <div className="flex items-center gap-3">
                       <Avatar>
                         <AvatarImage src={other.avatar_url || undefined} />
-                        <AvatarFallback>{other.username[0].toUpperCase()}</AvatarFallback>
+                        <AvatarFallback>{displayName[0].toUpperCase()}</AvatarFallback>
                       </Avatar>
-                      <p className="font-medium">{other.username}</p>
+                      <p className="font-medium">{displayName}</p>
                     </div>
                   );
                 })()}
