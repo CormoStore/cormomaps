@@ -23,6 +23,7 @@ interface Review {
   user_id: string;
   profiles: {
     full_name: string | null;
+    username: string | null;
     avatar_url: string | null;
   };
 }
@@ -61,7 +62,7 @@ const ReviewSection = ({ spotId }: ReviewSectionProps) => {
         comment,
         created_at,
         user_id,
-        profiles(full_name, avatar_url)
+        profiles(full_name, username, avatar_url)
       `)
       .eq("spot_id", spotId)
       .order("created_at", { ascending: false });
@@ -260,9 +261,14 @@ const ReviewSection = ({ spotId }: ReviewSectionProps) => {
                 </Avatar>
                 <div className="flex-1">
                   <div className="flex items-center justify-between mb-1">
-                    <p className="font-medium">
-                      {review.profiles.full_name || "Utilisateur"}
-                    </p>
+                    <div>
+                      <p className="font-medium">
+                        {review.profiles.full_name || review.profiles.username || "Utilisateur"}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        @{review.profiles.username || "utilisateur"}
+                      </p>
+                    </div>
                     <div className="flex items-center gap-1">
                       {[...Array(5)].map((_, i) => (
                         <Star

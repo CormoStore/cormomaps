@@ -8,7 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 interface Profile {
   id: string;
   full_name: string | null;
-  email: string | null;
+  username: string | null;
   avatar_url: string | null;
   spot_count?: number;
   review_count?: number;
@@ -29,7 +29,7 @@ const Community = () => {
     
     const { data: profilesData, error: profilesError } = await supabase
       .from("profiles")
-      .select("id, full_name, email, avatar_url");
+      .select("id, full_name, username, avatar_url");
 
     if (profilesError) {
       console.error("Error loading profiles:", profilesError);
@@ -72,7 +72,7 @@ const Community = () => {
     const searchLower = searchQuery.toLowerCase();
     return (
       profile.full_name?.toLowerCase().includes(searchLower) ||
-      profile.email?.toLowerCase().includes(searchLower)
+      profile.username?.toLowerCase().includes(searchLower)
     );
   });
 
@@ -119,9 +119,11 @@ const Community = () => {
                 
                 <div className="flex-1 text-left">
                   <h3 className="font-semibold text-lg">
-                    {profile.full_name || profile.email?.split("@")[0] || "Utilisateur"}
+                    {profile.full_name || profile.username || "Utilisateur"}
                   </h3>
-                  <p className="text-sm text-muted-foreground">{profile.email}</p>
+                  <p className="text-sm text-[hsl(var(--ios-blue))]">
+                    @{profile.username || "utilisateur"}
+                  </p>
                   
                   <div className="flex gap-4 mt-2">
                     <div className="flex items-center gap-1 text-sm text-muted-foreground">

@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 interface Profile {
   id: string;
   full_name: string | null;
-  email: string | null;
+  username: string | null;
   avatar_url: string | null;
 }
 
@@ -58,7 +58,7 @@ const UserProfile = () => {
     // Load profile
     const { data: profileData } = await supabase
       .from("profiles")
-      .select("*")
+      .select("id, full_name, username, avatar_url")
       .eq("id", userId)
       .single();
 
@@ -148,14 +148,16 @@ const UserProfile = () => {
           <Avatar className="w-20 h-20">
             <AvatarImage src={profile.avatar_url || undefined} />
             <AvatarFallback className="text-2xl">
-              {profile.full_name?.[0] || profile.email?.[0] || "U"}
+              {profile.full_name?.[0] || profile.username?.[0] || "U"}
             </AvatarFallback>
           </Avatar>
           <div>
             <h2 className="text-2xl font-bold">
-              {profile.full_name || profile.email?.split("@")[0] || "Utilisateur"}
+              {profile.full_name || profile.username || "Utilisateur"}
             </h2>
-            <p className="text-muted-foreground text-sm">{profile.email}</p>
+            <p className="text-muted-foreground text-sm">
+              @{profile.username || "utilisateur"}
+            </p>
           </div>
         </div>
 

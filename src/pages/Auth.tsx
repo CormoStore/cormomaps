@@ -9,8 +9,15 @@ import { Fish } from "lucide-react";
 import { z } from "zod";
 
 const authSchema = z.object({
-  email: z.string().email("Email invalide"),
+  email: z.string().trim().email("Email invalide").max(255),
   password: z.string().min(6, "Le mot de passe doit contenir au moins 6 caractères"),
+  username: z.string()
+    .trim()
+    .min(3, "Le nom d'utilisateur doit contenir au moins 3 caractères")
+    .max(20, "Le nom d'utilisateur ne peut pas dépasser 20 caractères")
+    .regex(/^[a-zA-Z0-9_-]+$/, "Le nom d'utilisateur ne peut contenir que des lettres, chiffres, tirets et underscores")
+    .optional(),
+  fullName: z.string().trim().max(100).optional(),
 });
 
 const Auth = () => {
@@ -18,6 +25,7 @@ const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
+  const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -36,7 +44,12 @@ const Auth = () => {
     
     try {
       // Validate input
-      authSchema.parse({ email, password });
+      const validationData: any = { email, password };
+      if (!isLogin) {
+        validationData.username = username;
+        validationData.fullName = fullName;
+      }
+      authSchema.parse(validationData);
       
       setLoading(true);
 
@@ -78,6 +91,7 @@ const Auth = () => {
             emailRedirectTo: redirectUrl,
             data: {
               full_name: fullName,
+              username: username,
             },
           },
         });
@@ -140,17 +154,35 @@ const Auth = () => {
 
           <form onSubmit={handleAuth} className="space-y-4">
             {!isLogin && (
-              <div className="space-y-2">
-                <Label htmlFor="fullName">Nom complet</Label>
-                <Input
-                  id="fullName"
-                  type="text"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  placeholder="Jean Dupont"
-                  required
-                />
-              </div>
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="username">Nom d'utilisateur</Label>
+                  <Input
+                    id="username"
+                    type="text"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    placeholder="@votrenom"
+                    required
+                    pattern="[a-zA-Z0-9_-]{3,20}"
+                    title="3-20 caractères: lettres, chiffres, tirets et underscores uniquement"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    3-20 caractères: lettres, chiffres, tirets et underscores uniquement
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="fullName">Nom complet</Label>
+                  <Input
+                    id="fullName"
+                    type="text"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    placeholder="Jean Dupont"
+                    required
+                  />
+                </div>
+              </>
             )}
 
             <div className="space-y-2">
@@ -203,6 +235,7 @@ const Auth = () => {
                 setEmail("");
                 setPassword("");
                 setFullName("");
+                setUsername("");
               }}
               className="text-sm text-[hsl(var(--ios-blue))] hover:underline"
             >

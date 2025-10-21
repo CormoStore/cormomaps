@@ -37,7 +37,7 @@ const Profile = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [isEditOpen, setIsEditOpen] = useState(false);
-  const [profile, setProfile] = useState<{ full_name: string | null; avatar_url: string | null } | null>(null);
+  const [profile, setProfile] = useState<{ full_name: string | null; avatar_url: string | null; username: string | null } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -61,7 +61,7 @@ const Profile = () => {
     setIsLoading(true);
     const { data, error } = await supabase
       .from("profiles")
-      .select("full_name, avatar_url")
+      .select("full_name, avatar_url, username")
       .eq("id", user.id)
       .single();
 
@@ -308,7 +308,9 @@ const Profile = () => {
                 </DialogContent>
               </Dialog>
             </div>
-            <p className="text-muted-foreground text-sm">{user?.email}</p>
+            <p className="text-muted-foreground text-sm">
+              @{profile?.username || "utilisateur"}
+            </p>
             {isAdmin && (
               <div className="flex items-center gap-1 mt-1">
                 <Shield className="w-4 h-4 text-amber-500" />
