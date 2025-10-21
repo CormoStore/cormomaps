@@ -1,5 +1,5 @@
 import { FishingSpot } from "@/types";
-import { X, Navigation, Heart, Star, FileText, Fish, AlertCircle } from "lucide-react";
+import { X, Navigation, Heart, Star, FileText, Fish, AlertCircle, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 
@@ -85,6 +85,36 @@ const SpotDetail = ({ spot, onClose, isFavorite, onToggleFavorite }: SpotDetailP
               ))}
             </div>
           </div>
+
+          {/* Pricing (only if no permit required) */}
+          {!spot.regulations.permit && spot.pricing && (
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <CreditCard className="w-5 h-5 text-[hsl(var(--ios-blue))]" />
+                <h3 className="font-semibold text-lg">Grille tarifaire</h3>
+              </div>
+              <div className="grid grid-cols-1 gap-3">
+                {spot.pricing.daily && (
+                  <div className="flex items-center justify-between p-3 bg-secondary/50 rounded-xl">
+                    <span className="font-medium">Journée</span>
+                    <span className="text-[hsl(var(--ios-blue))] font-semibold">{spot.pricing.daily}</span>
+                  </div>
+                )}
+                {spot.pricing.day24h && (
+                  <div className="flex items-center justify-between p-3 bg-secondary/50 rounded-xl">
+                    <span className="font-medium">24 heures</span>
+                    <span className="text-[hsl(var(--ios-blue))] font-semibold">{spot.pricing.day24h}</span>
+                  </div>
+                )}
+                {spot.pricing.yearly && (
+                  <div className="flex items-center justify-between p-3 bg-secondary/50 rounded-xl">
+                    <span className="font-medium">Carte annuelle</span>
+                    <span className="text-[hsl(var(--ios-blue))] font-semibold">{spot.pricing.yearly}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Regulations */}
           <div>

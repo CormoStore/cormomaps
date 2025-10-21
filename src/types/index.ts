@@ -12,6 +12,11 @@ export interface FishingSpot {
     minSize: string;
     quotas: string;
   };
+  pricing?: {
+    daily: string;
+    day24h: string;
+    yearly: string;
+  };
   reviews: Review[];
 }
 

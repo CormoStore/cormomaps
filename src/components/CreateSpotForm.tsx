@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { X, MapPin, Camera, Fish, FileText, Scale, Hash } from "lucide-react";
+import { X, MapPin, Camera, Fish, FileText, Scale, Hash, Euro } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -34,6 +34,9 @@ const CreateSpotForm = ({ onClose, onSubmit, initialCoordinates }: CreateSpotFor
     permitRequired: true,
     minSize: "",
     quotas: "",
+    pricingDaily: "",
+    pricingDay24h: "",
+    pricingYearly: "",
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -78,6 +81,11 @@ const CreateSpotForm = ({ onClose, onSubmit, initialCoordinates }: CreateSpotFor
           minSize: formData.minSize,
           quotas: formData.quotas,
         },
+        pricing: !formData.permitRequired && (formData.pricingDaily || formData.pricingDay24h || formData.pricingYearly) ? {
+          daily: formData.pricingDaily,
+          day24h: formData.pricingDay24h,
+          yearly: formData.pricingYearly,
+        } : undefined,
         reviews: [],
       };
 
@@ -236,6 +244,46 @@ const CreateSpotForm = ({ onClose, onSubmit, initialCoordinates }: CreateSpotFor
               />
             </div>
           </div>
+
+          {/* Pricing (only if permit not required) */}
+          {!formData.permitRequired && (
+            <div className="space-y-3 p-3 bg-secondary/30 rounded-xl">
+              <h3 className="font-semibold text-sm">Grille tarifaire</h3>
+              
+              <div className="space-y-2">
+                <Label htmlFor="pricingDaily">Prix à la journée</Label>
+                <Input
+                  id="pricingDaily"
+                  value={formData.pricingDaily}
+                  onChange={(e) => setFormData({ ...formData, pricingDaily: e.target.value })}
+                  placeholder="Ex: 15€"
+                  maxLength={50}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="pricingDay24h">Prix les 24h</Label>
+                <Input
+                  id="pricingDay24h"
+                  value={formData.pricingDay24h}
+                  onChange={(e) => setFormData({ ...formData, pricingDay24h: e.target.value })}
+                  placeholder="Ex: 25€"
+                  maxLength={50}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="pricingYearly">Prix à l'année</Label>
+                <Input
+                  id="pricingYearly"
+                  value={formData.pricingYearly}
+                  onChange={(e) => setFormData({ ...formData, pricingYearly: e.target.value })}
+                  placeholder="Ex: 250€"
+                  maxLength={50}
+                />
+              </div>
+            </div>
+          )}
 
           {/* Actions */}
           <div className="flex gap-3 pt-4">

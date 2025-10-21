@@ -45,12 +45,17 @@ export const fishingSpots: FishingSpot[] = [
     longitude: 2.3522,
     rating: 4.2,
     image: spotEtangForet,
-    description: "Étang paisible entouré de végétation luxuriante, parfait pour une journée de pêche relaxante.",
+    description: "Étang paisible entouré de végétation luxuriante, parfait pour une journée de pêche relaxante. Accès payant sans permis national.",
     fish: ["Carpe", "Gardon", "Tanche"],
     regulations: {
-      permit: true,
+      permit: false,
       minSize: "Carpe: 40cm",
       quotas: "No-kill recommandé pour les carpes",
+    },
+    pricing: {
+      daily: "15€",
+      day24h: "25€",
+      yearly: "200€",
     },
     reviews: [
       {
