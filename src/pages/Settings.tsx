@@ -1,4 +1,4 @@
-import { ArrowLeft, User, Shield } from "lucide-react";
+import { ArrowLeft, User, Shield, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useState, useEffect } from "react";
@@ -227,6 +227,28 @@ const Settings = () => {
                 <span className="text-sm font-semibold text-amber-500">Administrateur</span>
               </div>
             )}
+          </CardContent>
+        </Card>
+
+        {/* Subscription */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Crown className="w-5 h-5 text-primary" />
+              Abonnement
+            </CardTitle>
+            <CardDescription>
+              Gérez votre abonnement premium
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button 
+              variant="outline" 
+              className="w-full"
+              onClick={() => navigate("/subscription")}
+            >
+              Voir les abonnements
+            </Button>
           </CardContent>
         </Card>
       </div>

@@ -21,6 +21,7 @@ import Marketplace from "./pages/Marketplace";
 import Messages from "./pages/Messages";
 import FishingLicense from "./pages/FishingLicense";
 import ImportSpots from "./pages/ImportSpots";
+import Subscription from "./pages/Subscription";
 import TabBar from "./components/TabBar";
 
 const queryClient = new QueryClient();
@@ -50,6 +51,7 @@ const App = () => (
               <Route path="/feed" element={<ProtectedRoute><Feed /></ProtectedRoute>} />
               <Route path="/marketplace" element={<ProtectedRoute><Marketplace /></ProtectedRoute>} />
               <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
+              <Route path="/subscription" element={<ProtectedRoute><Subscription /></ProtectedRoute>} />
             </Routes>
             <TabBar />
           </div>
