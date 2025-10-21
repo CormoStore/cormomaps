@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
-import { Search, Filter, MapPin, Plus } from "lucide-react";
+import { Search, Filter, MapPin, Plus, X } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import Map, { Marker, NavigationControl, GeolocateControl } from "react-map-gl/mapbox";
 import SpotDetail from "@/components/SpotDetail";
 import CreateSpotForm from "@/components/CreateSpotForm";
@@ -11,11 +12,13 @@ const MAPBOX_TOKEN = "pk.eyJ1IjoiY29ybW9zdG9yZSIsImEiOiJjbWgwZ2U4NWUwaG9tNWtxdWM
 
 const MapPage = () => {
   const { spots, addSpot, updateSpot } = useSpots();
+  const { toast } = useToast();
   const [selectedSpot, setSelectedSpot] = useState<FishingSpot | null>(null);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingSpot, setEditingSpot] = useState<FishingSpot | null>(null);
   const [mapCenter, setMapCenter] = useState<{ lat: number; lng: number } | null>(null);
+  const [isCreationMode, setIsCreationMode] = useState(false);
   const mapRef = useRef(null);
 
   const toggleFavorite = (spotId: string) => {
@@ -31,12 +34,19 @@ const MapPage = () => {
   };
 
   const handleCreateSpot = () => {
-    // Get current map center
-    if (mapRef.current) {
-      const map = (mapRef.current as any).getMap();
-      const center = map.getCenter();
-      setMapCenter({ lat: center.lat, lng: center.lng });
-    }
+    setIsCreationMode(true);
+    toast({
+      title: "Mode création activé",
+      description: "Cliquez sur la carte pour placer votre spot",
+    });
+  };
+
+  const handleMapClick = (event: any) => {
+    if (!isCreationMode) return;
+    
+    const { lngLat } = event;
+    setMapCenter({ lat: lngLat.lat, lng: lngLat.lng });
+    setIsCreationMode(false);
     setShowCreateForm(true);
   };
 
@@ -83,6 +93,8 @@ const MapPage = () => {
         }}
         style={{ width: "100%", height: "100%" }}
         mapStyle="mapbox://styles/mapbox/outdoors-v12"
+        onClick={handleMapClick}
+        cursor={isCreationMode ? "crosshair" : "auto"}
       >
         {/* Map Controls */}
         <NavigationControl position="top-right" style={{ top: 80, right: 16 }} />
@@ -113,10 +125,28 @@ const MapPage = () => {
       {/* Floating Add Button */}
       <button
         onClick={handleCreateSpot}
-        className="absolute bottom-28 right-4 z-10 w-14 h-14 rounded-full bg-[hsl(var(--ios-blue))] shadow-lg flex items-center justify-center hover:scale-110 transition-transform animate-scale-in"
+        className={`absolute bottom-28 right-4 z-10 w-14 h-14 rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-all animate-scale-in ${
+          isCreationMode 
+            ? "bg-red-500 animate-pulse" 
+            : "bg-[hsl(var(--ios-blue))]"
+        }`}
       >
-        <Plus className="w-6 h-6 text-white" />
+        {isCreationMode ? (
+          <X className="w-6 h-6 text-white" onClick={(e) => {
+            e.stopPropagation();
+            setIsCreationMode(false);
+          }} />
+        ) : (
+          <Plus className="w-6 h-6 text-white" />
+        )}
       </button>
+
+      {/* Creation Mode Indicator */}
+      {isCreationMode && (
+        <div className="absolute top-24 left-1/2 -translate-x-1/2 z-10 bg-background/95 backdrop-blur-md px-4 py-2 rounded-full shadow-lg animate-fade-in">
+          <p className="text-sm font-medium">📍 Cliquez sur la carte pour placer le spot</p>
+        </div>
+      )}
 
       {/* Spot Detail Modal */}
       {selectedSpot && (
