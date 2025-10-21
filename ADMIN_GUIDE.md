@@ -56,18 +56,50 @@ ON CONFLICT (user_id, role) DO NOTHING;
 4. Un nouvel onglet "Admin" apparaîtra dans la barre de navigation
 5. Vous pourrez approuver/rejeter les spots en attente
 
-## 🎯 Système de modération
+## 🎯 Système de modération (IA + Humaine)
 
-### Flux de validation des spots :
-1. **Création** : Un utilisateur crée un spot → Statut "En attente"
-2. **Modération** : Un admin voit le spot dans l'onglet "Admin"
-3. **Validation** : L'admin approuve ou rejette le spot
-4. **Publication** : Si approuvé, le spot devient visible sur la carte pour tous
+### 🤖 Modération IA automatique
+
+L'application utilise **Lovable AI** (Gemini 2.5 Flash) pour analyser automatiquement chaque nouveau spot :
+
+**Analyse du contenu :**
+- 📝 **Texte** : Nom, description, liste des poissons
+- 🖼️ **Images** : Jusqu'à 3 images analysées
+- ✅ **Détection** : Contenu inapproprié, spam, informations fausses
+
+**Décisions automatiques :**
+- ✅ **Approbation automatique** : Si confiance élevée (>0.8) et contenu approprié
+  - Le spot est **immédiatement visible** sur la carte
+  - Message : "Votre spot a été publié automatiquement ! ✅"
+  
+- ❌ **Rejet automatique** : Si contenu inapproprié détecté
+  - Le spot n'est **pas créé**
+  - Message d'erreur avec la raison du rejet
+  
+- ⏳ **Revue humaine** : Si contenu suspect ou incertain
+  - Le spot passe en statut "En attente"
+  - Un administrateur doit le valider manuellement
+
+**Critères de détection IA :**
+- Langage offensant, vulgaire ou inapproprié
+- Spam, publicité ou contenu commercial
+- Contenu haineux ou discriminatoire
+- Informations manifestement fausses ou trompeuses
+- Images inappropriées (violence, contenu adulte, hors-sujet)
+
+### 👤 Flux de validation des spots :
+1. **Création** : Un utilisateur crée un spot
+2. **IA Analyse** : Modération automatique en quelques secondes
+3. **Décision** :
+   - ✅ Approuvé automatiquement → Visible immédiatement
+   - ❌ Rejeté automatiquement → Spot non créé
+   - ⏳ En attente → Validation manuelle par admin
+4. **Publication** : Les spots approuvés sont visibles sur la carte
 
 ### Statuts des spots :
-- **🟡 pending** (En attente) : Nouveau spot non encore modéré
+- **🟡 pending** (En attente) : Spot nécessitant une revue humaine
 - **🟢 approved** (Approuvé) : Spot validé et visible sur la carte
-- **🔴 rejected** (Rejeté) : Spot refusé par un administrateur
+- **🔴 rejected** (Rejeté) : Spot refusé (IA ou admin)
 
 ### Interface de modération :
 L'onglet "Admin" contient 3 sous-onglets :

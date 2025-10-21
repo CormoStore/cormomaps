@@ -88,6 +88,52 @@ export const useFishingSpots = () => {
     }
 
     try {
+      // Show loading toast
+      toast({
+        title: "Modération en cours...",
+        description: "Analyse IA du contenu",
+      });
+
+      // Call AI moderation
+      const { data: moderationData, error: moderationError } = await supabase.functions.invoke(
+        'moderate-spot',
+        {
+          body: {
+            name: spot.name,
+            description: spot.description,
+            fish: spot.fish,
+            images: spot.images,
+          },
+        }
+      );
+
+      if (moderationError) {
+        console.error("Moderation error:", moderationError);
+        // Continue with manual review on error
+        moderationData.decision = 'review';
+      }
+
+      console.log('Moderation result:', moderationData);
+
+      // Determine status based on AI decision
+      let status = 'pending';
+      let toastMessage = "Votre spot est en attente de validation";
+      
+      if (moderationData.decision === 'approve') {
+        status = 'approved';
+        toastMessage = "Votre spot a été publié automatiquement ! ✅";
+      } else if (moderationData.decision === 'reject') {
+        toast({
+          title: "Spot rejeté",
+          description: `Contenu inapproprié détecté: ${moderationData.reason}`,
+          variant: "destructive",
+        });
+        return;
+      } else {
+        toastMessage = "Votre spot est en attente de validation par un modérateur";
+      }
+
+      // Insert spot with determined status
       const { data, error } = await supabase
         .from("fishing_spots")
         .insert([
@@ -107,7 +153,7 @@ export const useFishingSpots = () => {
             pricing_day24h: spot.pricing_day24h,
             pricing_yearly: spot.pricing_yearly,
             created_by: user.id,
-            status: 'pending',
+            status: status,
           },
         ])
         .select()
@@ -117,7 +163,7 @@ export const useFishingSpots = () => {
 
       toast({
         title: "Spot créé !",
-        description: "Votre spot est en attente de validation par un administrateur",
+        description: toastMessage,
       });
 
       return data;
