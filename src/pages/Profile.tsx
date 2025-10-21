@@ -1,4 +1,4 @@
-import { MapPin, Fish, MessageSquare, ChevronRight, LogOut, Shield, Edit2, Camera } from "lucide-react";
+import { MapPin, Fish, MessageSquare, ChevronRight, LogOut, Shield, Edit2, Camera, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import avatarJean from "@/assets/avatar-jean.jpg";
@@ -12,6 +12,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { useNavigate } from "react-router-dom";
 
 const stats = [
   { icon: MapPin, label: "Spots visités", value: "12" },
@@ -20,9 +21,9 @@ const stats = [
 ];
 
 const menuItems = [
-  { label: "Mes spots", icon: MapPin },
-  { label: "Mes prises", icon: Fish },
-  { label: "Paramètres", icon: ChevronRight },
+  { label: "Mes spots", icon: MapPin, action: "mySpots" as const },
+  { label: "Mes prises", icon: Fish, action: "myCatches" as const },
+  { label: "Paramètres", icon: Settings, action: "settings" as const },
 ];
 
 const profileSchema = z.object({
@@ -34,6 +35,7 @@ type ProfileFormData = z.infer<typeof profileSchema>;
 const Profile = () => {
   const { user, signOut, isAdmin } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [profile, setProfile] = useState<{ full_name: string | null; avatar_url: string | null } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -213,6 +215,28 @@ const Profile = () => {
     }
   };
 
+  const handleMenuClick = (action: typeof menuItems[number]["action"]) => {
+    if (!user) return;
+    
+    switch (action) {
+      case "mySpots":
+        navigate(`/user/${user.id}`);
+        break;
+      case "myCatches":
+        toast({
+          title: "Bientôt disponible",
+          description: "La fonctionnalité Mes prises sera bientôt disponible",
+        });
+        break;
+      case "settings":
+        toast({
+          title: "Bientôt disponible",
+          description: "La page de paramètres sera bientôt disponible",
+        });
+        break;
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background pb-24 pt-4 px-4">
       <h1 className="text-3xl font-bold mb-6 mt-2">Profil</h1>
@@ -318,6 +342,7 @@ const Profile = () => {
           return (
             <button
               key={index}
+              onClick={() => handleMenuClick(item.action)}
               className="w-full bg-card rounded-2xl p-4 flex items-center justify-between shadow-sm hover:shadow-md transition-shadow"
             >
               <div className="flex items-center gap-3">
