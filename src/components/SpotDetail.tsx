@@ -27,6 +27,8 @@ const SpotDetail = ({ spot, onClose, isFavorite, onToggleFavorite, onEdit, onDel
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const images = spot.images && spot.images.length > 0 ? spot.images : [spot.image];
 
+  console.log("SpotDetail - spot.isCustom:", spot.isCustom, "onEdit:", !!onEdit, "onDelete:", !!onDelete);
+
   const nextImage = () => {
     setCurrentImageIndex((prev) => (prev + 1) % images.length);
   };

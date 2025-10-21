@@ -165,8 +165,10 @@ const CreateSpotForm = ({ onClose, onSubmit, initialCoordinates, editingSpot, on
           yearly: formData.pricingYearly,
         } : undefined,
         reviews: editingSpot?.reviews || [],
-        isCustom: editingSpot?.isCustom,
+        isCustom: true,
       };
+
+      console.log("Spot créé/modifié avec isCustom:", spotData.isCustom, spotData);
 
       onSubmit(spotData);
       toast({

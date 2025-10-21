@@ -11,7 +11,13 @@ export const useSpots = () => {
     // Load custom spots from localStorage
     const customSpotsJson = localStorage.getItem(SPOTS_STORAGE_KEY);
     const customSpots = customSpotsJson ? JSON.parse(customSpotsJson) : [];
-    setSpots([...defaultSpots, ...customSpots]);
+    // Ensure all custom spots have isCustom: true
+    const customSpotsWithFlag = customSpots.map((spot: FishingSpot) => ({
+      ...spot,
+      isCustom: true
+    }));
+    console.log("Spots chargés:", { defaultSpots: defaultSpots.length, customSpots: customSpotsWithFlag.length });
+    setSpots([...defaultSpots, ...customSpotsWithFlag]);
   }, []);
 
   const addSpot = (spot: FishingSpot) => {
