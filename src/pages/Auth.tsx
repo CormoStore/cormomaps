@@ -78,7 +78,7 @@ const Auth = () => {
 
         toast({
           title: "Connexion réussie !",
-          description: "Bienvenue sur FishSpot",
+          description: "Bienvenue sur Cormo Maps",
         });
         navigate("/");
       } else {
@@ -149,7 +149,7 @@ const Auth = () => {
           <p className="text-center text-muted-foreground mb-8">
             {isLogin
               ? "Accédez à vos spots de pêche"
-              : "Créez votre compte FishSpot"}
+              : "Créez votre compte Cormo Maps"}
           </p>
 
           <form onSubmit={handleAuth} className="space-y-4">

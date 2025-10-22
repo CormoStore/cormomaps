@@ -58,7 +58,7 @@ const Subscription = () => {
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground">
-                Pour gérer vos abonnements, veuillez utiliser l'application mobile FishSpot disponible sur iOS et Android.
+                Pour gérer vos abonnements, veuillez utiliser l'application mobile Cormo Maps disponible sur iOS et Android.
               </p>
             </CardContent>
           </Card>

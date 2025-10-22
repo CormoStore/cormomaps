@@ -1,4 +1,4 @@
-# Guide Administrateur - FishSpot
+# Guide Administrateur - Cormo Maps
 
 ## 🎯 Système d'administration
 

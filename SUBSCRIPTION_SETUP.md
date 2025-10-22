@@ -22,8 +22,8 @@ Ce guide explique comment configurer les abonnements via App Store et Play Store
 2. Sélectionnez votre application
 3. Allez dans **Fonctionnalités** > **Achats intégrés**
 4. Créez les produits d'abonnement :
-   - **Premium** : `fishspot_premium_monthly` (4.99€/mois)
-   - **Pro** : `fishspot_pro_monthly` (9.99€/mois)
+   - **Premium** : `cormomaps_premium_monthly` (4.99€/mois)
+   - **Pro** : `cormomaps_pro_monthly` (9.99€/mois)
 5. Configurez les groupes d'abonnements
 6. Notez les identifiants de produits
 
@@ -33,8 +33,8 @@ Ce guide explique comment configurer les abonnements via App Store et Play Store
 2. Sélectionnez votre application
 3. Allez dans **Monétiser** > **Produits** > **Abonnements**
 4. Créez les produits d'abonnement :
-   - **Premium** : `fishspot_premium_monthly` (4.99€/mois)
-   - **Pro** : `fishspot_pro_monthly` (9.99€/mois)
+   - **Premium** : `cormomaps_premium_monthly` (4.99€/mois)
+   - **Pro** : `cormomaps_pro_monthly` (9.99€/mois)
 5. Notez les identifiants de produits
 
 ### 4. Lier RevenueCat avec les stores

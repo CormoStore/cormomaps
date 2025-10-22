@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { FishingSpot } from "@/types";
 import { fishingSpots as defaultSpots } from "@/data/spots";
 
-const SPOTS_STORAGE_KEY = "fishspot-custom-spots";
+const SPOTS_STORAGE_KEY = "cormomaps-custom-spots";
 
 export const useSpots = () => {
   const [spots, setSpots] = useState<FishingSpot[]>([]);
