@@ -73,13 +73,13 @@ const MapPage = () => {
   return (
     <div className="relative h-screen w-full pb-20">
       {/* Search Bar */}
-      <div className="absolute top-safe z-10 left-4 right-4 mt-4">
+      <div className="absolute z-10 left-4 right-4" style={{ top: "calc(env(safe-area-inset-top) + 12px)" }}>
         <div className="glass-ios-white rounded-2xl shadow-lg p-3 flex items-center gap-3">
           <Search className="w-5 h-5 text-muted-foreground" />
           <input
             type="text"
             placeholder="Rechercher un spot..."
-            className="flex-1 bg-transparent border-none outline-none text-base"
+            className="flex-1 bg-transparent border-none outline-none text-base md:text-base"
           />
           <button className="w-9 h-9 rounded-full bg-[hsl(var(--ios-blue))] flex items-center justify-center">
             <Filter className="w-4 h-4 text-white" />
