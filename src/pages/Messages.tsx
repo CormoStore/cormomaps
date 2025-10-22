@@ -190,11 +190,11 @@ const Messages = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background safe-bottom">
+    <div className="min-h-screen bg-background safe-bottom safe-top">
       <div className="flex h-[calc(100vh-5rem)]">
         {/* Conversations list */}
         <div className={`${selectedConversation ? "hidden md:block" : "block"} w-full md:w-80 border-r border-border`}>
-          <div className="p-4 border-b border-border">
+          <div className="p-4 pt-6 border-b border-border">
             <h1 className="text-xl font-bold">Messages</h1>
           </div>
           <ScrollArea className="h-[calc(100vh-9rem)]">
@@ -248,7 +248,7 @@ const Messages = () => {
           {selectedConversation ? (
             <>
               {/* Header */}
-              <div className="p-4 border-b border-border flex items-center gap-3">
+              <div className="p-4 pt-6 border-b border-border flex items-center gap-3">
                 <Button
                   variant="ghost"
                   size="icon"
