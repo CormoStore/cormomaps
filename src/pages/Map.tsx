@@ -79,7 +79,7 @@ const MapPage = () => {
           <input
             type="text"
             placeholder="Rechercher un spot..."
-            className="flex-1 bg-transparent border-none outline-none text-sm"
+            className="flex-1 bg-transparent border-none outline-none text-base"
           />
           <button className="w-9 h-9 rounded-full bg-[hsl(var(--ios-blue))] flex items-center justify-center">
             <Filter className="w-4 h-4 text-white" />
