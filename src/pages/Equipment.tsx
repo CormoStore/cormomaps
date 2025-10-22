@@ -7,7 +7,7 @@ const Equipment = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-background pb-24 pt-4 px-4">
+    <div className="min-h-screen bg-background safe-bottom pt-4 px-4">
       <div className="flex items-center gap-4 mb-6">
         <Button
           variant="ghost"

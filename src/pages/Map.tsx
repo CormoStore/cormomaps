@@ -71,7 +71,7 @@ const MapPage = () => {
   }
 
   return (
-    <div className="relative h-screen w-full pb-20">
+    <div className="relative h-screen w-full safe-bottom">
       {/* Search Bar */}
       <div className="absolute z-10 left-4 right-4" style={{ top: "calc(env(safe-area-inset-top) + 12px)" }}>
         <div className="glass-ios-white rounded-2xl shadow-lg p-3 flex items-center gap-3">

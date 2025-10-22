@@ -40,7 +40,7 @@ const Subscription = () => {
 
   if (!isNativePlatform) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 pb-20">
+      <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 safe-bottom">
         <div className="container mx-auto px-4 py-6 max-w-4xl">
           <div className="flex items-center gap-4 mb-6">
             <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
@@ -68,7 +68,7 @@ const Subscription = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 pb-20">
+    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 safe-bottom">
       <div className="container mx-auto px-4 py-6 max-w-4xl">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">

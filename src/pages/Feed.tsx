@@ -201,7 +201,7 @@ const Feed = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen bg-background safe-bottom">
       {/* Header */}
       <div className="sticky top-0 bg-background/80 backdrop-blur-lg border-b border-border z-10">
         <div className="flex items-center justify-between px-4 py-3">

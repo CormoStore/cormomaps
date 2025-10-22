@@ -103,7 +103,7 @@ All colors MUST be HSL.
     bottom: 0;
     left: 0;
     right: 0;
-    height: 83px;
+    height: calc(68px + env(safe-area-inset-bottom));
     background: rgba(248, 248, 248, 0.8);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
@@ -117,7 +117,7 @@ All colors MUST be HSL.
   }
   
   .safe-bottom {
-    padding-bottom: env(safe-area-inset-bottom);
+    padding-bottom: calc(68px + env(safe-area-inset-bottom));
   }
   
   /* iOS Animations */

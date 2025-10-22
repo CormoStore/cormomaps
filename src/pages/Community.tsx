@@ -77,7 +77,7 @@ const Community = () => {
   });
 
   return (
-    <div className="min-h-screen bg-background pb-24 pt-4 px-4">
+    <div className="min-h-screen bg-background safe-bottom pt-4 px-4">
       <h1 className="text-3xl font-bold mb-6 mt-2">Communauté</h1>
 
       {/* Search Bar */}

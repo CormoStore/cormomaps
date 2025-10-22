@@ -16,14 +16,14 @@ const Favorites = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background pb-24 pt-4 px-4 flex items-center justify-center">
+      <div className="min-h-screen bg-background safe-bottom pt-4 px-4 flex items-center justify-center">
         <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background pb-24 pt-4 px-4">
+    <div className="min-h-screen bg-background safe-bottom pt-4 px-4">
       <h1 className="text-3xl font-bold mb-6 mt-2">Mes Favoris</h1>
 
       {favoriteSpots.length === 0 ? (

@@ -190,7 +190,7 @@ const Messages = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className="min-h-screen bg-background safe-bottom">
       <div className="flex h-[calc(100vh-5rem)]">
         {/* Conversations list */}
         <div className={`${selectedConversation ? "hidden md:block" : "block"} w-full md:w-80 border-r border-border`}>

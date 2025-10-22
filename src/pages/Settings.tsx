@@ -130,7 +130,7 @@ const Settings = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background pb-24 pt-4 px-4">
+      <div className="min-h-screen bg-background safe-bottom pt-4 px-4">
         <div className="flex items-center gap-4 mb-6">
           <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
             <ArrowLeft className="h-5 w-5" />
@@ -143,7 +143,7 @@ const Settings = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-24 pt-4 px-4">
+    <div className="min-h-screen bg-background safe-bottom pt-4 px-4">
       <div className="flex items-center gap-4 mb-6">
         <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
           <ArrowLeft className="h-5 w-5" />

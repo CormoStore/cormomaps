@@ -184,7 +184,7 @@ const FishingLicense = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-24 pt-4 px-4">
+    <div className="min-h-screen bg-background safe-bottom pt-4 px-4">
       <div className="flex items-center justify-between mb-6 mt-2">
         <h1 className="text-2xl sm:text-3xl font-bold">Mes cartes de pêche</h1>
         <Dialog open={isDialogOpen} onOpenChange={(open) => { setIsDialogOpen(open); if (!open) stopScanning(); }}>
