@@ -66,6 +66,12 @@ const Auth = () => {
               description: "Email ou mot de passe incorrect",
               variant: "destructive",
             });
+          } else if (error.message.includes("Email not confirmed")) {
+            toast({
+              title: "Email non vérifié",
+              description: "Veuillez vérifier votre email avant de vous connecter",
+              variant: "destructive",
+            });
           } else {
             toast({
               title: "Erreur",
@@ -115,9 +121,12 @@ const Auth = () => {
 
         toast({
           title: "Compte créé !",
-          description: "Vous pouvez maintenant vous connecter",
+          description: "Vérifiez votre email pour activer votre compte",
         });
-        navigate("/");
+        setIsLogin(true);
+        setPassword("");
+        setFullName("");
+        setUsername("");
       }
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -138,7 +147,7 @@ const Auth = () => {
         <div className="bg-background rounded-3xl shadow-2xl p-8">
           {/* Logo */}
           <div className="flex justify-center mb-6">
-            <img src={logo} alt="Cormo Maps" className="w-24 h-24 object-contain" />
+            <img src={logo} alt="Cormo Maps" className="w-24 h-24 object-contain border-0" />
           </div>
 
           <h1 className="text-3xl font-bold text-center mb-2">
