@@ -5,8 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Fish } from "lucide-react";
 import { z } from "zod";
+import logo from "@/assets/logo.png";
 
 const authSchema = z.object({
   email: z.string().trim().email("Email invalide").max(255),
@@ -138,9 +138,7 @@ const Auth = () => {
         <div className="bg-background rounded-3xl shadow-2xl p-8">
           {/* Logo */}
           <div className="flex justify-center mb-6">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-green-500 flex items-center justify-center">
-              <Fish className="w-8 h-8 text-white" />
-            </div>
+            <img src={logo} alt="Cormo Maps" className="w-24 h-24 object-contain" />
           </div>
 
           <h1 className="text-3xl font-bold text-center mb-2">
