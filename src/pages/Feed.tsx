@@ -11,6 +11,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { z } from "zod";
+
+const postSchema = z.object({
+  caption: z.string().trim().max(500, "La description doit contenir moins de 500 caractères"),
+  fish_species: z.string().trim().max(50, "L'espèce doit contenir moins de 50 caractères"),
+  weight: z.string().trim().max(20, "Le poids doit contenir moins de 20 caractères"),
+  length: z.string().trim().max(20, "La taille doit contenir moins de 20 caractères"),
+  location: z.string().trim().max(100, "Le lieu doit contenir moins de 100 caractères"),
+});
 
 interface Post {
   id: string;
@@ -113,6 +122,14 @@ const Feed = () => {
     setUploadingPost(true);
 
     try {
+      // Validate input data
+      postSchema.parse({
+        caption: newPost.caption || "",
+        fish_species: newPost.fish_species || "",
+        weight: newPost.weight || "",
+        length: newPost.length || "",
+        location: newPost.location || "",
+      });
       // Upload image
       const fileExt = newPost.image.name.split(".").pop();
       const fileName = `${Date.now()}.${fileExt}`;
@@ -161,11 +178,19 @@ const Feed = () => {
       loadPosts();
     } catch (error) {
       console.error("Error creating post:", error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de créer la publication",
-        variant: "destructive",
-      });
+      if (error instanceof z.ZodError) {
+        toast({
+          title: "Erreur de validation",
+          description: error.errors[0].message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Erreur",
+          description: "Impossible de créer la publication",
+          variant: "destructive",
+        });
+      }
     } finally {
       setUploadingPost(false);
     }

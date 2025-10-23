@@ -1,10 +1,27 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+// Get the origin from the request and validate it
+const getAllowedOrigin = (req: Request): string => {
+  const origin = req.headers.get('origin') || '';
+  const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
+  
+  // Allow requests from the Supabase project domain and lovable.app preview domains
+  if (origin.includes(supabaseUrl.replace('https://', '')) || 
+      origin.includes('.lovable.app') || 
+      origin.includes('localhost')) {
+    return origin;
+  }
+  
+  // Default to the Supabase URL if origin is not recognized
+  return supabaseUrl;
 };
+
+const getCorsHeaders = (req: Request) => ({
+  'Access-Control-Allow-Origin': getAllowedOrigin(req),
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Credentials': 'true',
+});
 
 // Input validation schema
 const moderationSchema = z.object({
@@ -30,6 +47,8 @@ const moderationSchema = z.object({
 });
 
 serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req);
+  
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }

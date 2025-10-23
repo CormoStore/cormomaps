@@ -12,6 +12,15 @@ import { Plus, MapPin, User, MessageCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { useMessaging } from "@/hooks/use-messaging";
+import { z } from "zod";
+
+const listingSchema = z.object({
+  title: z.string().trim().min(3, "Le titre doit contenir au moins 3 caractères").max(100, "Le titre doit contenir moins de 100 caractères"),
+  description: z.string().trim().min(10, "La description doit contenir au moins 10 caractères").max(1000, "La description doit contenir moins de 1000 caractères"),
+  price: z.number().positive("Le prix doit être positif").max(1000000, "Prix trop élevé"),
+  category: z.string().min(1, "Veuillez sélectionner une catégorie"),
+  location: z.string().trim().max(100, "La localisation doit contenir moins de 100 caractères"),
+});
 
 interface Listing {
   id: string;
@@ -104,6 +113,14 @@ const Marketplace = () => {
     if (!user) return;
 
     try {
+      // Validate input data
+      listingSchema.parse({
+        title: formData.title,
+        description: formData.description,
+        price: parseFloat(formData.price),
+        category: formData.category,
+        location: formData.location || "",
+      });
       let imageUrl = "";
 
       if (formData.image) {
@@ -151,11 +168,19 @@ const Marketplace = () => {
       loadListings();
     } catch (error) {
       console.error("Error creating listing:", error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de créer l'annonce",
-        variant: "destructive",
-      });
+      if (error instanceof z.ZodError) {
+        toast({
+          title: "Erreur de validation",
+          description: error.errors[0].message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Erreur",
+          description: "Impossible de créer l'annonce",
+          variant: "destructive",
+        });
+      }
     }
   };
 
