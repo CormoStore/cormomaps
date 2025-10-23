@@ -27,6 +27,9 @@ const Auth = () => {
   const [fullName, setFullName] = useState("");
   const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showResendButton, setShowResendButton] = useState(false);
+  const [canResend, setCanResend] = useState(true);
+  const [resendCooldown, setResendCooldown] = useState(0);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -38,6 +41,55 @@ const Auth = () => {
       }
     });
   }, [navigate]);
+
+  useEffect(() => {
+    // Countdown timer for resend cooldown
+    if (resendCooldown > 0) {
+      const timer = setTimeout(() => {
+        setResendCooldown(resendCooldown - 1);
+      }, 1000);
+      return () => clearTimeout(timer);
+    } else if (resendCooldown === 0 && !canResend) {
+      setCanResend(true);
+    }
+  }, [resendCooldown, canResend]);
+
+  const handleResendVerification = async () => {
+    if (!canResend || !email) return;
+
+    try {
+      setLoading(true);
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: email,
+      });
+
+      if (error) {
+        toast({
+          title: "Erreur",
+          description: error.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      toast({
+        title: "Email envoyé !",
+        description: "Vérifiez votre boîte de réception",
+      });
+
+      setCanResend(false);
+      setResendCooldown(60);
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,6 +124,7 @@ const Auth = () => {
               description: "Veuillez vérifier votre email avant de vous connecter",
               variant: "destructive",
             });
+            setShowResendButton(true);
           } else {
             toast({
               title: "Erreur",
@@ -123,6 +176,7 @@ const Auth = () => {
           title: "Compte créé !",
           description: "Vérifiez votre email pour activer votre compte",
         });
+        setShowResendButton(true);
         setIsLogin(true);
         setPassword("");
         setFullName("");
@@ -234,6 +288,21 @@ const Auth = () => {
                 : "Créer un compte"}
             </Button>
           </form>
+
+          {showResendButton && isLogin && (
+            <div className="mt-4">
+              <Button
+                onClick={handleResendVerification}
+                variant="outline"
+                className="w-full"
+                disabled={loading || !canResend}
+              >
+                {!canResend
+                  ? `Renvoyer l'email (${resendCooldown}s)`
+                  : "Renvoyer l'email de vérification"}
+              </Button>
+            </div>
+          )}
 
           <div className="mt-6 text-center">
             <button
