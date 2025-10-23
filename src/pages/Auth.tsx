@@ -27,7 +27,8 @@ const Auth = () => {
   const [fullName, setFullName] = useState("");
   const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(false);
-  const [showResendButton, setShowResendButton] = useState(false);
+  const [showCodeVerification, setShowCodeVerification] = useState(false);
+  const [verificationCode, setVerificationCode] = useState("");
   const [canResend, setCanResend] = useState(true);
   const [resendCooldown, setResendCooldown] = useState(0);
   const { toast } = useToast();
@@ -54,14 +55,16 @@ const Auth = () => {
     }
   }, [resendCooldown, canResend]);
 
-  const handleResendVerification = async () => {
+  const handleResendCode = async () => {
     if (!canResend || !email) return;
 
     try {
       setLoading(true);
-      const { error } = await supabase.auth.resend({
-        type: 'signup',
+      const { error } = await supabase.auth.signInWithOtp({
         email: email,
+        options: {
+          shouldCreateUser: false,
+        },
       });
 
       if (error) {
@@ -74,12 +77,60 @@ const Auth = () => {
       }
 
       toast({
-        title: "Email envoyé !",
+        title: "Code envoyé !",
         description: "Vérifiez votre boîte de réception",
       });
 
       setCanResend(false);
       setResendCooldown(60);
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyCode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (verificationCode.length !== 6) {
+      toast({
+        title: "Code invalide",
+        description: "Le code doit contenir 6 chiffres",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const { error } = await supabase.auth.verifyOtp({
+        email: email,
+        token: verificationCode,
+        type: 'email',
+      });
+
+      if (error) {
+        toast({
+          title: "Code incorrect",
+          description: "Veuillez vérifier le code et réessayer",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      toast({
+        title: "Email vérifié !",
+        description: "Vous pouvez maintenant vous connecter",
+      });
+      
+      setShowCodeVerification(false);
+      setVerificationCode("");
+      setIsLogin(true);
     } catch (error) {
       toast({
         title: "Erreur",
@@ -121,10 +172,10 @@ const Auth = () => {
           } else if (error.message.includes("Email not confirmed")) {
             toast({
               title: "Email non vérifié",
-              description: "Veuillez vérifier votre email avant de vous connecter",
+              description: "Veuillez entrer le code reçu par email",
               variant: "destructive",
             });
-            setShowResendButton(true);
+            setShowCodeVerification(true);
           } else {
             toast({
               title: "Erreur",
@@ -141,13 +192,11 @@ const Auth = () => {
         });
         navigate("/");
       } else {
-        const redirectUrl = `${window.location.origin}/`;
-        
-        const { error } = await supabase.auth.signUp({
+        // First, sign up the user
+        const { error: signUpError } = await supabase.auth.signUp({
           email,
           password,
           options: {
-            emailRedirectTo: redirectUrl,
             data: {
               full_name: fullName,
               username: username,
@@ -155,8 +204,8 @@ const Auth = () => {
           },
         });
 
-        if (error) {
-          if (error.message.includes("User already registered")) {
+        if (signUpError) {
+          if (signUpError.message.includes("User already registered")) {
             toast({
               title: "Erreur",
               description: "Cet email est déjà utilisé",
@@ -165,19 +214,35 @@ const Auth = () => {
           } else {
             toast({
               title: "Erreur",
-              description: error.message,
+              description: signUpError.message,
               variant: "destructive",
             });
           }
           return;
         }
 
-        toast({
-          title: "Compte créé !",
-          description: "Vérifiez votre email pour activer votre compte",
+        // Then send OTP code
+        const { error: otpError } = await supabase.auth.signInWithOtp({
+          email: email,
+          options: {
+            shouldCreateUser: false,
+          },
         });
-        setShowResendButton(true);
-        setIsLogin(true);
+
+        if (otpError) {
+          toast({
+            title: "Erreur",
+            description: "Impossible d'envoyer le code de vérification",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        toast({
+          title: "Code envoyé !",
+          description: "Entrez le code à 6 chiffres reçu par email",
+        });
+        setShowCodeVerification(true);
         setPassword("");
         setFullName("");
         setUsername("");
@@ -204,14 +269,76 @@ const Auth = () => {
             <img src={logo} alt="Cormo Maps" className="w-24 h-24 object-contain border-0" />
           </div>
 
-          <h1 className="text-3xl font-bold text-center mb-2">
-            {isLogin ? "Connexion" : "Inscription"}
-          </h1>
-          <p className="text-center text-muted-foreground mb-8">
-            {isLogin
-              ? "Accédez à vos spots de pêche"
-              : "Créez votre compte Cormo Maps"}
-          </p>
+          {showCodeVerification ? (
+            <>
+              <h1 className="text-3xl font-bold text-center mb-2">
+                Vérification
+              </h1>
+              <p className="text-center text-muted-foreground mb-8">
+                Entrez le code à 6 chiffres reçu par email
+              </p>
+
+              <form onSubmit={handleVerifyCode} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="code">Code de vérification</Label>
+                  <Input
+                    id="code"
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]{6}"
+                    maxLength={6}
+                    value={verificationCode}
+                    onChange={(e) => setVerificationCode(e.target.value.replace(/[^0-9]/g, ''))}
+                    placeholder="000000"
+                    required
+                    className="text-center text-2xl tracking-widest"
+                  />
+                </div>
+
+                <Button
+                  type="submit"
+                  className="w-full bg-[hsl(var(--ios-blue))] hover:bg-[hsl(var(--ios-blue))]/90"
+                  disabled={loading || verificationCode.length !== 6}
+                >
+                  {loading ? "Vérification..." : "Vérifier"}
+                </Button>
+              </form>
+
+              <div className="mt-4">
+                <Button
+                  onClick={handleResendCode}
+                  variant="outline"
+                  className="w-full"
+                  disabled={loading || !canResend}
+                >
+                  {!canResend
+                    ? `Renvoyer le code (${resendCooldown}s)`
+                    : "Renvoyer le code"}
+                </Button>
+              </div>
+
+              <div className="mt-6 text-center">
+                <button
+                  onClick={() => {
+                    setShowCodeVerification(false);
+                    setVerificationCode("");
+                  }}
+                  className="text-sm text-[hsl(var(--ios-blue))] hover:underline"
+                >
+                  Retour à la connexion
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
+              <h1 className="text-3xl font-bold text-center mb-2">
+                {isLogin ? "Connexion" : "Inscription"}
+              </h1>
+              <p className="text-center text-muted-foreground mb-8">
+                {isLogin
+                  ? "Accédez à vos spots de pêche"
+                  : "Créez votre compte Cormo Maps"}
+              </p>
 
           <form onSubmit={handleAuth} className="space-y-4">
             {!isLogin && (
@@ -276,50 +403,37 @@ const Auth = () => {
               )}
             </div>
 
-            <Button
-              type="submit"
-              className="w-full bg-[hsl(var(--ios-blue))] hover:bg-[hsl(var(--ios-blue))]/90"
-              disabled={loading}
-            >
-              {loading
-                ? "Chargement..."
-                : isLogin
-                ? "Se connecter"
-                : "Créer un compte"}
-            </Button>
-          </form>
-
-          {showResendButton && isLogin && (
-            <div className="mt-4">
               <Button
-                onClick={handleResendVerification}
-                variant="outline"
-                className="w-full"
-                disabled={loading || !canResend}
+                type="submit"
+                className="w-full bg-[hsl(var(--ios-blue))] hover:bg-[hsl(var(--ios-blue))]/90"
+                disabled={loading}
               >
-                {!canResend
-                  ? `Renvoyer l'email (${resendCooldown}s)`
-                  : "Renvoyer l'email de vérification"}
+                {loading
+                  ? "Chargement..."
+                  : isLogin
+                  ? "Se connecter"
+                  : "Créer un compte"}
               </Button>
-            </div>
-          )}
+            </form>
 
-          <div className="mt-6 text-center">
-            <button
-              onClick={() => {
-                setIsLogin(!isLogin);
-                setEmail("");
-                setPassword("");
-                setFullName("");
-                setUsername("");
-              }}
-              className="text-sm text-[hsl(var(--ios-blue))] hover:underline"
-            >
-              {isLogin
-                ? "Pas encore de compte ? S'inscrire"
-                : "Déjà un compte ? Se connecter"}
-            </button>
-          </div>
+            <div className="mt-6 text-center">
+              <button
+                onClick={() => {
+                  setIsLogin(!isLogin);
+                  setEmail("");
+                  setPassword("");
+                  setFullName("");
+                  setUsername("");
+                }}
+                className="text-sm text-[hsl(var(--ios-blue))] hover:underline"
+              >
+                {isLogin
+                  ? "Pas encore de compte ? S'inscrire"
+                  : "Déjà un compte ? Se connecter"}
+              </button>
+            </div>
+            </>
+          )}
         </div>
       </div>
     </div>
