@@ -21,9 +21,12 @@ const authSchema = z.object({
 });
 
 const Auth = () => {
+  const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(false);
-  const [magicLinkSent, setMagicLinkSent] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -37,37 +40,87 @@ const Auth = () => {
   }, [navigate]);
 
 
-  const handleMagicLink = async (e: React.FormEvent) => {
+  const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     
     try {
-      const emailSchema = z.string().trim().email("Email invalide").max(255);
-      emailSchema.parse(email);
+      // Validate input
+      const validationData: any = { email, password };
+      if (!isLogin) {
+        validationData.username = username;
+        validationData.fullName = fullName;
+      }
+      authSchema.parse(validationData);
       
       setLoading(true);
 
-      const { error } = await supabase.auth.signInWithOtp({
-        email: email,
-        options: {
-          emailRedirectTo: `${window.location.origin}/`,
-          shouldCreateUser: true,
-        },
-      });
-
-      if (error) {
-        toast({
-          title: "Erreur",
-          description: error.message,
-          variant: "destructive",
+      if (isLogin) {
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
         });
-        return;
-      }
 
-      toast({
-        title: "Email envoyé !",
-        description: "Cliquez sur le lien dans votre email pour vous connecter",
-      });
-      setMagicLinkSent(true);
+        if (error) {
+          if (error.message.includes("Invalid login credentials")) {
+            toast({
+              title: "Erreur",
+              description: "Email ou mot de passe incorrect",
+              variant: "destructive",
+            });
+          } else {
+            toast({
+              title: "Erreur",
+              description: error.message,
+              variant: "destructive",
+            });
+          }
+          return;
+        }
+
+        toast({
+          title: "Connexion réussie !",
+          description: "Bienvenue sur Cormo Maps",
+        });
+        navigate("/");
+      } else {
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/`,
+            data: {
+              full_name: fullName,
+              username: username,
+            },
+          },
+        });
+
+        if (error) {
+          if (error.message.includes("User already registered")) {
+            toast({
+              title: "Erreur",
+              description: "Cet email est déjà utilisé",
+              variant: "destructive",
+            });
+          } else {
+            toast({
+              title: "Erreur",
+              description: error.message,
+              variant: "destructive",
+            });
+          }
+          return;
+        }
+
+        toast({
+          title: "Compte créé !",
+          description: "Vérifiez votre email et cliquez sur le lien pour activer votre compte",
+        });
+        setIsLogin(true);
+        setPassword("");
+        setFullName("");
+        setUsername("");
+      }
     } catch (error) {
       if (error instanceof z.ZodError) {
         toast({
@@ -90,58 +143,107 @@ const Auth = () => {
             <img src={logo} alt="Cormo Maps" className="w-24 h-24 object-contain border-0" />
           </div>
 
-          {magicLinkSent ? (
-            <>
-              <h1 className="text-3xl font-bold text-center mb-2">
-                Email envoyé !
-              </h1>
-              <p className="text-center text-muted-foreground mb-8">
-                Cliquez sur le lien dans votre email pour vous connecter
-              </p>
-              <div className="text-center">
-                <button
-                  onClick={() => {
-                    setMagicLinkSent(false);
-                    setEmail("");
-                  }}
-                  className="text-sm text-[hsl(var(--ios-blue))] hover:underline"
-                >
-                  Modifier l'email
-                </button>
-              </div>
-            </>
-          ) : (
-            <>
-              <h1 className="text-3xl font-bold text-center mb-2">
-                Connexion
-              </h1>
-              <p className="text-center text-muted-foreground mb-8">
-                Recevez un lien magique par email
-              </p>
+          <h1 className="text-3xl font-bold text-center mb-2">
+            {isLogin ? "Connexion" : "Inscription"}
+          </h1>
+          <p className="text-center text-muted-foreground mb-8">
+            {isLogin
+              ? "Accédez à vos spots de pêche"
+              : "Créez votre compte Cormo Maps"}
+          </p>
 
-              <form onSubmit={handleMagicLink} className="space-y-4">
+          <form onSubmit={handleAuth} className="space-y-4">
+            {!isLogin && (
+              <>
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="username">Nom d'utilisateur</Label>
                   <Input
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="jean@example.com"
+                    id="username"
+                    type="text"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    placeholder="@votrenom"
+                    required
+                    pattern="[a-zA-Z0-9_-]{3,20}"
+                    title="3-20 caractères: lettres, chiffres, tirets et underscores uniquement"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    3-20 caractères: lettres, chiffres, tirets et underscores uniquement
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="fullName">Nom complet</Label>
+                  <Input
+                    id="fullName"
+                    type="text"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    placeholder="Jean Dupont"
                     required
                   />
                 </div>
+              </>
+            )}
 
-                <Button
-                  type="submit"
-                  className="w-full bg-[hsl(var(--ios-blue))] hover:bg-[hsl(var(--ios-blue))]/90"
-                  disabled={loading}
-                >
-                  {loading ? "Envoi..." : "Envoyer le lien magique"}
-                </Button>
-              </form>
-            </>
-          )}
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="jean@example.com"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="password">Mot de passe</Label>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                required
+                minLength={6}
+              />
+              {!isLogin && (
+                <p className="text-xs text-muted-foreground">
+                  Au moins 6 caractères
+                </p>
+              )}
+            </div>
+
+            <Button
+              type="submit"
+              className="w-full bg-[hsl(var(--ios-blue))] hover:bg-[hsl(var(--ios-blue))]/90"
+              disabled={loading}
+            >
+              {loading
+                ? "Chargement..."
+                : isLogin
+                ? "Se connecter"
+                : "Créer un compte"}
+            </Button>
+          </form>
+
+          <div className="mt-6 text-center">
+            <button
+              onClick={() => {
+                setIsLogin(!isLogin);
+                setEmail("");
+                setPassword("");
+                setFullName("");
+                setUsername("");
+              }}
+              className="text-sm text-[hsl(var(--ios-blue))] hover:underline"
+            >
+              {isLogin
+                ? "Pas encore de compte ? S'inscrire"
+                : "Déjà un compte ? Se connecter"}
+            </button>
+          </div>
         </div>
       </div>
     </div>
