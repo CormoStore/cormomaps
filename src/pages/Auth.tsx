@@ -192,11 +192,11 @@ const Auth = () => {
         });
         navigate("/");
       } else {
-        // First, sign up the user
-        const { error: signUpError } = await supabase.auth.signUp({
-          email,
-          password,
+        // Send OTP code for signup
+        const { data, error: otpError } = await supabase.auth.signInWithOtp({
+          email: email,
           options: {
+            shouldCreateUser: true,
             data: {
               full_name: fullName,
               username: username,
@@ -204,8 +204,8 @@ const Auth = () => {
           },
         });
 
-        if (signUpError) {
-          if (signUpError.message.includes("User already registered")) {
+        if (otpError) {
+          if (otpError.message.includes("already registered")) {
             toast({
               title: "Erreur",
               description: "Cet email est déjà utilisé",
@@ -214,27 +214,10 @@ const Auth = () => {
           } else {
             toast({
               title: "Erreur",
-              description: signUpError.message,
+              description: otpError.message,
               variant: "destructive",
             });
           }
-          return;
-        }
-
-        // Then send OTP code
-        const { error: otpError } = await supabase.auth.signInWithOtp({
-          email: email,
-          options: {
-            shouldCreateUser: false,
-          },
-        });
-
-        if (otpError) {
-          toast({
-            title: "Erreur",
-            description: "Impossible d'envoyer le code de vérification",
-            variant: "destructive",
-          });
           return;
         }
 
