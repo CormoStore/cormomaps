@@ -9,6 +9,14 @@ import { ArrowLeft, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
+import { z } from "zod";
+
+const messageSchema = z.object({
+  content: z.string()
+    .trim()
+    .min(1, "Le message ne peut pas être vide")
+    .max(2000, "Le message doit contenir moins de 2000 caractères")
+});
 
 interface Conversation {
   id: string;
@@ -150,6 +158,9 @@ const Messages = () => {
     if (!newMessage.trim() || !selectedConversation || !user) return;
 
     try {
+      // Validate message content
+      messageSchema.parse({ content: newMessage });
+
       const { error } = await supabase.from("messages").insert({
         conversation_id: selectedConversation,
         sender_id: user.id,
@@ -167,6 +178,16 @@ const Messages = () => {
       setNewMessage("");
     } catch (error) {
       console.error("Error sending message:", error);
+      
+      if (error instanceof z.ZodError) {
+        toast({
+          title: "Erreur de validation",
+          description: error.errors[0].message,
+          variant: "destructive",
+        });
+        return;
+      }
+      
       toast({
         title: "Erreur",
         description: "Impossible d'envoyer le message",
