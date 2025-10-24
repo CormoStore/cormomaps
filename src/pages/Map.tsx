@@ -1,27 +1,45 @@
-import { useState, useRef } from "react";
-import { Search, Filter, MapPin, Plus, X } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { Search, Filter, MapPin, Plus, X, Locate } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
-import Map, { Marker, NavigationControl, GeolocateControl } from "react-map-gl/mapbox";
+import Map, { Marker, NavigationControl } from "react-map-gl/mapbox";
 import SpotDetail from "@/components/SpotDetail";
 import CreateSpotForm from "@/components/CreateSpotForm";
 import { useFishingSpots, FishingSpot } from "@/hooks/use-fishing-spots";
 import { useFavorites } from "@/hooks/use-favorites";
+import { useGeolocation } from "@/hooks/use-geolocation";
 import "mapbox-gl/dist/mapbox-gl.css";
 
-const MAPBOX_TOKEN = "pk.eyJ1IjoiY29ybW9zdG9yZSIsImEiOiJjbWgwZ2U4NWUwaG9tNWtxdWM0cTEyamtyIn0.eCz_pytNEYgJyKjnP9J_Lw";
+const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 
 const MapPage = () => {
   const { spots, loading, addSpot, updateSpot, deleteSpot } = useFishingSpots();
   const { toast } = useToast();
   const { user, isAdmin } = useAuth();
   const { isFavorite, toggleFavorite } = useFavorites(user?.id);
+  const { position, loading: geoLoading, requestLocation } = useGeolocation();
   const [selectedSpot, setSelectedSpot] = useState<FishingSpot | null>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingSpot, setEditingSpot] = useState<FishingSpot | null>(null);
   const [mapCenter, setMapCenter] = useState<{ lat: number; lng: number } | null>(null);
   const [isCreationMode, setIsCreationMode] = useState(false);
+  const [viewState, setViewState] = useState({
+    longitude: 2.3522,
+    latitude: 46.6034,
+    zoom: 5.5,
+  });
   const mapRef = useRef(null);
+
+  // Center map on user location when available
+  useEffect(() => {
+    if (position && mapRef.current) {
+      setViewState({
+        longitude: position.longitude,
+        latitude: position.latitude,
+        zoom: 12,
+      });
+    }
+  }, [position]);
 
   const handleCreateSpot = () => {
     setIsCreationMode(true);
@@ -91,11 +109,8 @@ const MapPage = () => {
       <Map
         ref={mapRef}
         mapboxAccessToken={MAPBOX_TOKEN}
-        initialViewState={{
-          longitude: 2.3522,
-          latitude: 46.6034,
-          zoom: 5.5,
-        }}
+        {...viewState}
+        onMove={(evt) => setViewState(evt.viewState)}
         style={{ width: "100%", height: "100%" }}
         mapStyle="mapbox://styles/mapbox/outdoors-v12"
         onClick={handleMapClick}
@@ -103,11 +118,16 @@ const MapPage = () => {
       >
         {/* Map Controls */}
         <NavigationControl position="top-right" style={{ top: 80, right: 16 }} />
-        <GeolocateControl
-          position="top-right"
-          style={{ top: 140, right: 16 }}
-          trackUserLocation
-        />
+        
+        {/* Custom Geolocation Button with iOS/Android permission request */}
+        <button
+          onClick={requestLocation}
+          disabled={geoLoading}
+          className="absolute top-[140px] right-4 w-[29px] h-[29px] bg-white rounded border border-gray-200 shadow-md flex items-center justify-center hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          title="Me localiser"
+        >
+          <Locate className={`w-4 h-4 text-gray-700 ${geoLoading ? 'animate-pulse' : ''}`} />
+        </button>
 
         {/* Fishing Spot Markers */}
         {spots.map((spot) => (
